@@ -109,3 +109,4 @@ Configured in .claude/settings.local.json (do not commit).
 - MCP servers from `modelcontextprotocol/servers`: always check `servers-archived` repo first — many are archived/unmaintained
 - Cerbero agent evaluations: use structured report templates (SUMMARY, PUBLISHER, CAPABILITIES, RISK, VERDICT, CONDITIONS)
 - Vendor MCP tools: check closed-source status, language stack compatibility, compare against vendor's own SDK before adopting
+- Skills/MCPs as analytical lenses: apply approved skill methodologies actively during planning, execution, and verification — not just as passive references

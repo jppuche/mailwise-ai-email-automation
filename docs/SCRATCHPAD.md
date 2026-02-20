@@ -10,27 +10,7 @@ Compound learning: each session reads this file before working.
 - When graduating, remove original entries from scratchpad
 - All agents write with [agent-name] tag, Lorekeeper organizes and prunes
 
-## Session format
-
-<!-- Copy this template at the start of each new session -->
-<!--
-## YYYY-MM-DD -- [brief description]
-
-### Mistakes made
-- ...
-
-### User corrections
-- ...
-
-### What worked well
-- ...
-
-### What did NOT work
-- ...
-
-### Preferences discovered
-- ...
--->
+<!-- Session format: ## YYYY-MM-DD -- [description] / ### Mistakes made / ### User corrections / ### What worked well / ### What did NOT work / ### Preferences discovered -->
 
 ---
 
@@ -73,23 +53,16 @@ Compound learning: each session reads this file before working.
 
 ### Security discoveries
 
-- [security] PostgreSQL MCP: CONFIRMED SQL injection (Datadog). `COMMIT; DROP SCHEMA` bypasses read-only. Archived, unpatched, 21K weekly downloads. NEVER use v0.6.2.
-- [security] SAST MCP (Sengtocxoen): 5 stars, bundles offensive tools (SQLMap, Nmap), unauthenticated Flask server. REJECTED.
-- [security] HubSpot MCP: closed-source (no public repo). Beta v0.4.0, stale. Node.js dep in Python stack. DEFERRED.
-- [security] claude-code-security-review: Anthropic warns "not hardened against prompt injection". Checkmarx demonstrated bypasses. Use as additive layer only.
+- [security] Full evaluation details in DECISIONS.md Candidate Ecosystem Catalog
 - [security] Only 8.5% of MCP servers use OAuth; 53% rely on static tokens (Astrix research)
 - [quality] honnibal/claude-skills: .md.txt extension prevents hidden HTML comment injection — good practice
 
 ### Patterns graduated to CLAUDE.md
 
-- MCP servers from modelcontextprotocol/servers: always check servers-archived first
-- Cerbero evaluations: use structured templates with specific report sections
-- Always verify hashes when downloading (user rule)
-
-### Preferences discovered
-
-- [user] Always verify hashes when downloading — added as global rule to CLAUDE.md
-- [agent] For vendor MCP evaluations: check closed-source status, language compatibility, compare against vendor's own SDK
+- MCP servers: check servers-archived first
+- Cerbero: structured report templates
+- Verify hashes when downloading
+- Skills/MCPs as active analytical lenses (Phase 3 user correction)
 
 ---
 
@@ -111,4 +84,4 @@ Compound learning: each session reads this file before working.
 
 ### Preferences discovered
 
-- [user] Use skill/MCP knowledge actively throughout planning, execution, and verification — not just as references
+- [user] Use skill/MCP knowledge actively — graduated to CLAUDE.md Learned Patterns
