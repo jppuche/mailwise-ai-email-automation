@@ -15,9 +15,25 @@
 secrets/
 .env
 .env.*
+!.env.example
 
 # Embedded git repos (predecessor project)
 Preproyecto/5_n8n_Email_Organizer/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Node
+node_modules/
+frontend/dist/
 
 # OS
 .DS_Store
