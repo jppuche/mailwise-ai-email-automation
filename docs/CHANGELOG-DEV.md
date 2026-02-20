@@ -40,3 +40,15 @@
 - Skill-to-agent mapping defined: tighten-types+try-except→Inquisidor, contract-docstrings+pre-mortem+Cerbero→Sentinel
 - 18 architecture directives documented for Phase 4 block specs (4 tighten-types, 2 contract-docstrings, 3 try-except, 6 pre-mortem, 3 security)
 - 2 newly discovered honnibal skills (alignment-chart, concept-analysis) flagged for Phase 5 Cerbero evaluation
+
+## 2026-02-20 -- Phase 5: Team Assembly
+
+- 4 agent templates created: Inquisidor (sonnet), Sentinel (opus), backend-worker (sonnet), frontend-worker (sonnet)
+- 6 honnibal skills installed to .claude/skills/honnibal/ (tighten-types, try-except, contract-docstrings, pre-mortem, alignment-chart, concept-analysis)
+- Cerbero evaluation of alignment-chart: APPROVED (clean, markdown-only, 1 false positive scanner hit)
+- Cerbero evaluation of concept-analysis: APPROVED (clean, forensic analysis cleared false positive from agent context boundary confusion)
+- AGENT-COORDINATION.md Section 5 updated with mailwise-specific file ownership paths
+- AGENT-COORDINATION.md Section 13 populated with 7 skill triggers and 5 agent assignments
+- CLAUDE.md Skills section updated with 7 installed skills (cerbero + 6 honnibal)
+- 18 architecture directives embedded in agent prompts per skill methodology source
+- Forensic discovery: agent context boundary confusion can produce false positives when system-reminder tags are confused with file content — always verify with hex dump

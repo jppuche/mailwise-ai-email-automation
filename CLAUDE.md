@@ -36,6 +36,12 @@ Intelligent Email Classification and Routing System
 ## Skills (CHECK BEFORE each task)
 
 - `cerbero` -- Security evaluation of MCPs/Skills before installation
+- `tighten-types` -- Type precision at adapter boundaries, Pydantic models, no `Any` leakage
+- `try-except` -- Exception handling audit: structured try/except for external ops, conditionals for local
+- `contract-docstrings` -- Adapter boundary contracts: invariants, guarantees, errors, state transitions
+- `pre-mortem` -- Fragility analysis: 10 categories (ordering, stringly-typed, preconditions, non-atomic, defaults, version-coupled)
+- `alignment-chart` -- Function/test categorization by correctness and collaboration (D&D alignment model)
+- `concept-analysis` -- Naming consistency, domain glossary, concept boundary clarity
 
 ## Rules
 
@@ -110,3 +116,5 @@ Configured in .claude/settings.local.json (do not commit).
 - Cerbero agent evaluations: use structured report templates (SUMMARY, PUBLISHER, CAPABILITIES, RISK, VERDICT, CONDITIONS)
 - Vendor MCP tools: check closed-source status, language stack compatibility, compare against vendor's own SDK before adopting
 - Skills/MCPs as analytical lenses: apply approved skill methodologies actively during planning, execution, and verification — not just as passive references
+- Parallel agent deployment (3+ subagents) for independent tasks reduces elapsed time ~4x — use whenever tasks are independent
+- Agent security findings require forensic verification (hex dump, grep) before action — context boundary confusion produces false positives
