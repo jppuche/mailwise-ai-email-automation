@@ -53,3 +53,28 @@ Compound learning: each session reads this file before working.
 
 - [tooling] concept-analysis.md.txt frontmatter name is "conceptual-analysis" (not "concept-analysis") — minor naming inconsistency in honnibal repo
 - [architecture] Sentinel on opus (security depth), all others on sonnet (cost/speed) — matches Preproyecto precedent
+
+---
+
+## 2026-02-20 -- visual-explainer Cerbero eval + install [Lorekeeper]
+
+### Security discoveries
+
+- [security] nicobailon/visual-explainer: Cerbero eval APPROVED. 64 scanner findings across 12 files — ALL false positives (design instructions: "always use theme", "never use Inter"; HTML comments inside code blocks). Zero injection, zero encoding, zero zero-width chars.
+- [security] Skill writes HTML to `~/.agent/diagrams/` and opens browser — expected behavior. Optional `surf-cli` dep NOT evaluated.
+- [security] Scanner false-positive pattern: CSS/HTML skills trigger imperative word + html_comment checks heavily due to design instructions and code examples. Tier 3 semantic analysis essential for these skills.
+
+### What worked well
+
+- Parallel community intelligence (2 web searches) + skill content fetch completed eval context in one round
+- Scanning all 12 referenced files (not just SKILL.md) caught the full attack surface
+- visual-explainer reference templates absorbed before generating — output quality high
+
+### User corrections
+
+- [user] Font sizes too small in blueprint diagram — increased all sizes by 1-3px across the board
+- [user] Section numbers colliding with left border — fixed with `border-left: none` on `.sec-head`
+
+### Preferences discovered
+
+- [user] Prefers larger, more readable text in visualizations over compact density
