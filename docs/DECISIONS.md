@@ -141,7 +141,7 @@ Newly discovered skills: `alignment-chart` → Inquisidor (test categorization),
 15. Cat 10 (version-coupled): pin all SDK versions in pyproject.toml. Document known-compatible versions per adapter spec.
 
 **Security directives (Cerbero + OWASP):**
-16. Prompt injection defense: 4-layer architecture (Sec 11.2) — classification block spec allocates explicit implementation per layer.
+16. Prompt injection defense: 5-layer architecture (Sec 11.2 runtime defense + Sec 4.5 prompt architecture) — input sanitization, defensive prompt engineering, data delimiters, output validation against enum, no tool access during classification. Block specs B4/B8/B11 allocate explicit implementation per layer.
 17. PII never in logs (Sec 11.4). Structured logging references emails by ID only.
 18. Single-tenant: runtime monitoring deferred. CORS, rate limiting, input validation sufficient for Phase N.
 

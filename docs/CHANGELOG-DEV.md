@@ -52,3 +52,13 @@
 - CLAUDE.md Skills section updated with 7 installed skills (cerbero + 6 honnibal)
 - 18 architecture directives embedded in agent prompts per skill methodology source
 - Forensic discovery: agent context boundary confusion can produce false positives when system-reminder tags are confused with file content — always verify with hex dump
+
+## 2026-02-20 -- Phase 4: Architecture Blueprint
+
+- 20 block specs written to docs/specs/ (block-00 through block-19)
+- Skills applied as analytical lenses in specs: pre-mortem (fragility), try-except (exception strategy), tighten-types (type decisions), contract-docstrings (adapter contracts), alignment-chart (test categorization), concept-analysis (naming consistency)
+- Sentinel security review: 0 critical, 3 warnings, 5 suggestions (docs/reviews/phase-4-security-review.md)
+- Architecture directives from Phase 3 embedded in all specs (D1-D18 coverage, D15 minimal)
+- Tier 2 features explicitly assigned to blocks
+- Dependency DAG verified acyclic
+- D16 discrepancy found: specs implement 5-layer prompt injection defense (not 4 as in DECISIONS.md) — pending correction

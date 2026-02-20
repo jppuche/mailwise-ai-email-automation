@@ -4,7 +4,7 @@
 
 ## Current phase
 
-Phase 5: Team Assembly (COMPLETED — pending Phase 4)
+Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## Completed
 
@@ -12,12 +12,12 @@ Phase 5: Team Assembly (COMPLETED — pending Phase 4)
 - [x] Phase 1: Technical Landscape (15 tech decisions, ecosystem scan)
 - [x] Phase 2: Tooling & Security (8 candidates evaluated, 2 approved, 3 rejected, 1 deferred, 2 skipped)
 - [x] Phase 3: Strategic Review (15 confirmed, 6 adjusted, 18 architecture directives, agent composition confirmed)
+- [x] Phase 4: Architecture Blueprint (20 block specs, Sentinel security review: 0 critical, 3 warnings, 5 suggestions)
 - [x] Phase 5: Team Assembly (5 agents installed, 7 skills assigned, Section 13 populated)
 
 ## Pending
 
-- [ ] Phase 4: Architecture Blueprint (20 block specs)
-- [ ] Phase N: Development Blocks
+- [ ] Phase N: Development Blocks (start with block-00-scaffolding)
 
 ## Blockers
 
@@ -27,7 +27,8 @@ None
 
 - Dual objective: portfolio (AI Engineer) + consultant showcase
 - Phase order: 2→3→5→4 (agents before specs)
-- Stack: see CLAUDE.md
+- Phase 4 security review: docs/reviews/phase-4-security-review.md
+- D16 corrected: 5-layer prompt injection defense (Sec 11.2 + Sec 4.5) — DECISIONS.md updated
 
 ## Team & Tooling
 
