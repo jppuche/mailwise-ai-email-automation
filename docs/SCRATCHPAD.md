@@ -14,77 +14,24 @@ Compound learning: each session reads this file before working.
 
 ---
 
-## 2026-02-19 -- Initial setup
+## 2026-02-20 -- Phases 1-3 (consolidated)
 
-### What worked well
+### Key user preferences
 
-- Project structure generated correctly
-
----
-
-## 2026-02-20 -- Phase 1: Technical Landscape [Lorekeeper]
-
-### What worked well
-
-- FOUNDATION.md as single source of truth made tech decisions traceable
-- Preproyecto reference files provided validated patterns: 2-layer classification, sanitization pipeline
-- Plan critique cycle caught 8 edge cases early
-
-### Preferences discovered
-
-- [user] Dual objective: portfolio + consultant showcase (code as template + methodology as process)
+- [user] Dual objective: portfolio + consultant showcase
 - [user] Phase 5 before Phase 4: agents inform spec writing
-- [user] Prefers infrastructure (Celery+Redis) for professional appearance
 - [user] All 20 specs upfront: spec set is a consultant deliverable
+- [user] Prefers infrastructure (Celery+Redis) for professional appearance
 
----
+### Active discoveries (not yet in code)
 
-## 2026-02-20 -- Phase 2: Tooling & Security [Lorekeeper]
+- [architecture] LiteLLM `ModelResponse` wraps dynamic JSON — typed extraction layer needed at adapter boundary
+- [architecture] Celery `AsyncResult.get()` returns `Any` — use typed dataclasses via Redis/DB
+- [tooling] `gh` CLI not installed on this machine — use WebFetch/WebSearch fallback
 
-### What worked well
+### Graduated to CLAUDE.md Learned Patterns
 
-- Parallel agent deployment (4 agents) completed 7 evaluations in ~5 min vs ~20 min sequential
-- Cerbero structured templates produce high-quality evaluation reports from agents
-- Multi-source research (repo + README + blog + independent audits) catches issues single-source misses
-
-### What did NOT work
-
-- `gh` CLI not installed on this machine — agents fell back to WebFetch/WebSearch successfully
-
-### Security discoveries
-
-- [security] Full evaluation details in DECISIONS.md Candidate Ecosystem Catalog
-- [security] Only 8.5% of MCP servers use OAuth; 53% rely on static tokens (Astrix research)
-- [quality] honnibal/claude-skills: .md.txt extension prevents hidden HTML comment injection — good practice
-
-### Patterns graduated to CLAUDE.md
-
-- MCP servers: check servers-archived first
-- Cerbero: structured report templates
-- Verify hashes when downloading
-- Skills/MCPs as active analytical lenses (Phase 3 user correction)
-
----
-
-## 2026-02-20 -- Phase 3: Strategic Review [Lorekeeper]
-
-### What worked well
-
-- Skill methodologies as analytical lenses produced concrete architecture directives, not just "confirmed" stamps
-- pre-mortem 10 categories mapped directly to pipeline architecture — identified 6 fragility points (ordering, stringly-typed, unstated preconditions, non-atomic, load-bearing defaults, version coupling)
-- Parallel agent deployment for research + analysis maintained speed
-
-### Discoveries
-
-- [architecture] LiteLLM `ModelResponse` wraps dynamic provider JSON — must define typed extraction layer at adapter boundary, not pass `ModelResponse` to services
-- [architecture] Celery `AsyncResult.get()` returns `Any` — task chain results lose type info, need typed dataclasses via Redis/DB instead of result backend
-- [architecture] Docker Compose has 6 services (not 5 as stated in Phase 1) — frontend was undercounted
-- [tooling] 2 new honnibal skills discovered: `alignment-chart` (function categorization) and `concept-analysis` (naming consistency) — not in Phase 2 evaluation, flagged for Phase 5 Cerbero review
-- [methodology] 18 architecture directives organized by skill source provide actionable spec requirements, not generic guidelines
-
-### Preferences discovered
-
-- [user] Use skill/MCP knowledge actively — graduated to CLAUDE.md Learned Patterns
+- Parallel agents, forensic verification, MCP servers-archived, Cerbero templates, hash verification, skills as lenses
 
 ---
 

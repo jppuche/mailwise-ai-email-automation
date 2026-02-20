@@ -116,3 +116,5 @@ Configured in .claude/settings.local.json (do not commit).
 - Cerbero agent evaluations: use structured report templates (SUMMARY, PUBLISHER, CAPABILITIES, RISK, VERDICT, CONDITIONS)
 - Vendor MCP tools: check closed-source status, language stack compatibility, compare against vendor's own SDK before adopting
 - Skills/MCPs as analytical lenses: apply approved skill methodologies actively during planning, execution, and verification — not just as passive references
+- Parallel agent deployment (3+ subagents) for independent tasks reduces elapsed time ~4x — use whenever tasks are independent
+- Agent security findings require forensic verification (hex dump, grep) before action — context boundary confusion produces false positives
