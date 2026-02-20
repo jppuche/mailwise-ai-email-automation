@@ -85,3 +85,24 @@ Compound learning: each session reads this file before working.
 ### Preferences discovered
 
 - [user] Use skill/MCP knowledge actively — graduated to CLAUDE.md Learned Patterns
+
+---
+
+## 2026-02-20 -- Phase 5: Team Assembly [Lorekeeper]
+
+### What worked well
+
+- Parallel skill download + Cerbero eval maintained speed
+- Hex dump forensic analysis (xxd + grep) definitively resolved false positive in seconds
+- Agent templates with embedded architecture directives create self-contained workers
+
+### Security discoveries
+
+- [security] Agent context boundary confusion: system-reminder tags injected into agent context can be confused with file content. Agent ad230da reported prompt injection in concept-analysis.md.txt that did not exist. Forensic (xxd hex dump, grep, byte-level inspection) confirmed 658-byte file is 100% clean. Root cause: system injects `<system-reminder>` between agent processing steps, agent naively reported it as file content.
+- [security] Mitigation: ALWAYS verify agent security findings with forensic tools (hex dump, grep) before taking action. Never trust agent-reported injection findings without byte-level confirmation.
+- [security] SHA-256 hashes recorded for all 6 honnibal skills for future integrity verification
+
+### Discoveries
+
+- [tooling] concept-analysis.md.txt frontmatter name is "conceptual-analysis" (not "concept-analysis") — minor naming inconsistency in honnibal repo
+- [architecture] Sentinel on opus (security depth), all others on sonnet (cost/speed) — matches Preproyecto precedent

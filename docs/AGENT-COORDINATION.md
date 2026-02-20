@@ -117,15 +117,13 @@ Before each block, run per agent:
 
 ## 5. Strict File Ownership
 
-<!-- CUSTOMIZE: adapt to your project structure -->
-
 | Worker | Exclusive | Forbidden | Reads without modifying |
 |--------|-----------|-----------|------------------------|
-| frontend-worker | components, pages, styles, assets | backend logic, API, DB, tests, docs | shared types |
-| backend-worker | logic, API, DB, shared types | components, pages, styles, tests, docs | — |
-| Inquisidor (tests) | tests, test config | production code, docs | all src/ |
-| Lorekeeper (docs) | docs/, CLAUDE.md | all source code | — |
-| Sentinel (security) | .claude/hooks/, .claude/security/ | everything except hooks and security | all |
+| frontend-worker | `frontend/src/{components,pages,styles,assets,hooks,utils}/` | `src/`, `tests/`, `docs/`, `.claude/hooks/`, `alembic/` | `frontend/src/types/` (generated), `docs/specs/` |
+| backend-worker | `src/{api,services,adapters,models,core,tasks}/`, `alembic/` | `frontend/`, `tests/`, `docs/`, `.claude/hooks/` | `docs/specs/` |
+| Inquisidor (tests) | `tests/`, `conftest.py`, `pytest.ini` | `src/` (production), `frontend/src/`, `docs/`, `.claude/hooks/` | all `src/`, all `frontend/src/` |
+| Lorekeeper (docs) | `docs/`, `CLAUDE.md` | all source code (`src/`, `frontend/`, `tests/`) | — |
+| Sentinel (security) | `.claude/hooks/`, `.claude/security/`, `docs/reviews/` | `src/`, `frontend/`, `tests/` | all files (audit) |
 
 **Golden rule:** Two workers NEVER edit the same file. Conflict = Lead reassigns.
 
@@ -246,24 +244,25 @@ Installed skills are specialized knowledge. Use in planning, implementation AND 
 
 ### Installed Skills
 
-<!-- These tables are filled in Phase 4-5 of the workflow when skills are installed and assigned to agents.
-     During setup (Phase 0) they remain empty. -->
-
-| Skill | Trigger (when to use) | Publisher |
-|-------|----------------------|-----------|
-| <!-- skill-name --> | <!-- when to use --> | <!-- publisher --> |
+| Skill | Trigger (when to use) | Publisher | Path |
+|-------|----------------------|-----------|------|
+| cerbero | Before installing any MCP/Skill. Security audits. `/cerbero audit`. | Custom (Ignite) | `.claude/skills/cerbero/SKILL.md` |
+| tighten-types | Defining types, Pydantic models, adapter boundaries. Reviewing for `Any` leakage or `dict[str, Any]`. | honnibal | `.claude/skills/honnibal/tighten-types.md.txt` |
+| try-except | Implementing error handling for external service calls or pipeline stages. Reviewing exception strategy. | honnibal | `.claude/skills/honnibal/try-except.md.txt` |
+| contract-docstrings | Writing adapter interfaces. Documenting input/output/error contracts. State transition pre/postconditions. | honnibal | `.claude/skills/honnibal/contract-docstrings.md.txt` |
+| pre-mortem | Designing new components, reviewing architecture, identifying fragility. Before finalizing block specs. 10 categories. | honnibal | `.claude/skills/honnibal/pre-mortem.md.txt` |
+| alignment-chart | Categorizing functions or tests by correctness and collaboration. Organizing test suite structure. | honnibal | `.claude/skills/honnibal/alignment-chart.md.txt` |
+| concept-analysis | Establishing domain glossary, checking naming consistency, reviewing concept boundaries. | honnibal | `.claude/skills/honnibal/concept-analysis.md.txt` |
 
 ### Assignment per Agent
 
-<!-- CUSTOMIZE: assign skills to agents -->
-
 | Agent | Skills to CONSULT |
 |-------|-------------------|
-| **frontend-worker** | <!-- frontend skills --> |
-| **backend-worker** | <!-- backend skills --> |
-| **Inquisidor** (tests) | <!-- testing skills --> |
-| **Sentinel** (security) | <!-- security skills --> |
-| **Lorekeeper** | (no specific skills) |
+| **Inquisidor** (tests) | tighten-types (adapter boundary types), try-except (exception handling audit), alignment-chart (test categorization) |
+| **Sentinel** (security) | cerbero (MCP/Skill evaluation, security audits), contract-docstrings (adapter contract definitions), pre-mortem (fragility analysis, 10 categories) |
+| **backend-worker** | Consults Inquisidor for tighten-types + try-except methodology. Consults Sentinel for security review. |
+| **frontend-worker** | Consults Inquisidor for tighten-types (TypeScript type alignment). |
+| **Lorekeeper** | concept-analysis (domain glossary, naming consistency) |
 
 ### Pre-Task Protocol
 
