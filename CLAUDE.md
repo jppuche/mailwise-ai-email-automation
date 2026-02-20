@@ -118,3 +118,6 @@ Configured in .claude/settings.local.json (do not commit).
 - Skills/MCPs as analytical lenses: apply approved skill methodologies actively during planning, execution, and verification — not just as passive references
 - Parallel agent deployment (3+ subagents) for independent tasks reduces elapsed time ~4x — use whenever tasks are independent
 - Agent security findings require forensic verification (hex dump, grep) before action — context boundary confusion produces false positives
+- pyproject.toml: build-backend is `setuptools.build_meta` (NOT `setuptools.backends._legacy`). For `from src.X` imports: `where = ["."]` + `include = ["src*"]`
+- mypy type-ignore codes: structlog `get_logger()` returns `Any` — use `type: ignore[no-any-return]` not `[return-value]`
+- Docker at block-00: worker/scheduler exit (no celery_app yet) — 4/6 services healthy is expected baseline

@@ -67,83 +67,28 @@ Compound learning: each session reads this file before working.
 
 ---
 
-## 2026-02-20 -- Phase 4 close: STATUS + CHANGELOG + SCRATCHPAD [Lorekeeper]
+## 2026-02-20 -- Block 00 + Phase 4 close (consolidated) [Lorekeeper]
 
-### What worked well
+### Security findings (carry forward — implement in respective blocks)
 
-- Reading all 18 specs before security review (Sentinel pattern) produces comprehensive cross-block analysis
-- Pre-mortem 10 categories provide systematic fragility coverage — D1-D18 directive table useful for tracking
-- Parallel spec-writing (backend-worker B00-B19, frontend-worker B15-B17, Sentinel review) reduced elapsed time significantly
+- WARNING-01: `LLM_ALLOWED_MODELS` allowlist needed (B04/B14)
+- WARNING-02: `DRAFT_ORG_SYSTEM_PROMPT` max-length + startup warning (B11)
+- WARNING-03: `next(..., None)` for fallback category (B08)
 
-### Security findings from Sentinel review
+### B00 decisions (now in code)
 
-- [security] WARNING-01: LLM model string redirect via `PUT /api/integrations/llm` — mitigation: `LLM_ALLOWED_MODELS` allowlist
-- [security] WARNING-02: `DRAFT_ORG_SYSTEM_PROMPT` bypasses prompt injection defenses — add max-length + startup warning
-- [security] WARNING-03: `next(c for c in categories if c.is_fallback)` crashes StopIteration if no fallback — use `next(..., None)`
-- [security] D16 discrepancy: specs implement 5-layer defense (not 4 as in DECISIONS.md) — pending DECISIONS.md update
+- `src/api/main.py` minimal `/health` — Docker health check dependency
+- `conftest.py` at root: `os.environ.setdefault()` for CI without `.env`
+- Python 3.14 on host; Docker 3.12-slim. Worker/scheduler exit expected until B12.
 
-### Phase 4 verification status
+### B15 decisions (now in code)
 
-- [x] 20 spec files in docs/specs/ (block-00 through block-19)
-- [x] Sentinel security review complete: 0 critical, 3 warnings, 5 suggestions
-- [x] STATUS.md updated: Phase 4 marked complete, current phase = Development Blocks
-- [x] CHANGELOG-DEV.md appended with Phase 4 entry
-- [x] D16 discrepancy in DECISIONS.md — corrected to 5-layer (Sec 11.2 + Sec 4.5)
-- [ ] D15 directive (version pinning) minimally covered — address in block-00 pyproject.toml
+- Vite 7 flat ESLint config, `react-refresh` warn for contexts, placeholder `api.ts`
+- `configureClient()` in AuthProvider useEffect avoids circular dep
+- Bundle: 107.97 KB gzip (limit 200 KB). Node 24.13.0, npm 11.6.2.
 
----
+### Graduated to CLAUDE.md Learned Patterns
 
-## 2026-02-20 -- Block 00 scaffolding [backend-worker]
-
-### Mistakes made
-
-- [backend-worker] `setuptools.backends._legacy:_Backend` is wrong build-backend — correct is `setuptools.build_meta`
-- [backend-worker] `where = ["src"]` in setuptools packages.find discovers packages WITHOUT `src.` prefix. For `from src.core.config import Settings` to work, need `where = ["."]` + `include = ["src*"]`
-- [backend-worker] mypy `type: ignore[return-value]` wrong code — structlog returns `Any`, correct code is `type: ignore[no-any-return]`
-
-### What worked well
-
-- Spec-verbatim config.py: 0 iterations needed, all 33 tests passed first try
-- Frontend agent (parallel): delivered comprehensive scaffold in background while backend progressed — auth context, theme, routing, API layer, all quality gates passed
-- ruff format --check catches formatting drift immediately
-
-### Decisions made
-
-- [B00] `src/api/main.py` minimal health endpoint added (not in spec) — required for Docker health check exit criterion
-- [B00] `conftest.py` at root sets env defaults — tests work without `.env` in CI
-- [B00] Docker worker/scheduler: no health check at B00 (celery_app doesn't exist) — show as `running`
-- [B00] Python 3.14 on host; Docker uses 3.12-slim (spec target)
-
----
-
-## 2026-02-20 -- B15 Frontend scaffold [frontend-worker]
-
-### What worked well
-
-- Vite 7 + React 19 + React Router 7 scaffold works cleanly — all APIs compatible with spec (createBrowserRouter, RouterProvider, NavLink still identical interface)
-- TypeScript strict mode already active in Vite scaffold (tsconfig.app.json has `"strict": true`) — no changes needed
-- Parallel file writes (styles + contexts + components + pages) efficient
-- `npm run build` produces gzip 107.97 KB initial chunk — well under 200 KB spec limit
-
-### Decisions made
-
-- [B15] Vite 7 uses flat ESLint config (eslint.config.js) not .eslintrc.cjs — works equivalently, kept as-is
-- [B15] `react-refresh/only-export-components` downgraded to `warn` for context files — Provider+hook co-location is universal React pattern, false positive as error
-- [B15] Type aliases `type X = components["schemas"]["X"]` in api/auth.ts are D4-compliant — local aliases pointing to generated types, not manual re-implementation
-- [B15] `src/types/generated/api.ts` ships as placeholder with correct schema shape until backend is live; `npm run generate-types` overwrites it
-- [B15] `configureClient()` called inside AuthProvider useEffect to avoid circular dependency between api/client.ts and AuthContext.tsx
-
-### Tooling notes
-
-- Node 24.13.0, npm 11.6.2 on Windows 11 bash shell
-- `npm audit` reports vulnerabilities in transitive deps — standard for new Vite scaffold, does not block dev
-- `@types/node` installed automatically with tsx devDep (needed for vite.config.ts path resolution)
-
-### Quality gates passed
-
-- [x] `npm run typecheck` — 0 errors
-- [x] `npm run lint` — 0 errors (3 warnings, expected)
-- [x] `npm run build` — bundle: 107.97 KB gzip initial chunk
-- [x] No hardcoded colors in components.css
-- [x] No access token storage in localStorage/sessionStorage
-- [x] No manual API type duplication (D4 compliant)
+- pyproject.toml build-backend + packages.find config
+- mypy `type: ignore[no-any-return]` for structlog
+- Docker 4/6 healthy baseline at B00

@@ -17,11 +17,12 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 00: Project Scaffolding (local gates pass, Docker verification pending)
+- [ ] Block 01: Database Models (next)
 
 ## Pending
 
-- [ ] Blocks 01-19: Database models through deployment
+- [ ] Blocks 02-19
+- [x] Block 00: Project Scaffolding (all gates pass, Docker 4/6 healthy)
 
 ## Notes
 
