@@ -10,24 +10,23 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 - [x] Phase 0: Foundation (directory structure, CLAUDE.md, hooks, Cerbero)
 - [x] Phase 1: Technical Landscape (15 tech decisions, ecosystem scan)
-- [x] Phase 2: Tooling & Security (8 candidates evaluated, 2 approved, 3 rejected, 1 deferred, 2 skipped)
-- [x] Phase 3: Strategic Review (15 confirmed, 6 adjusted, 18 architecture directives, agent composition confirmed)
-- [x] Phase 4: Architecture Blueprint (20 block specs, Sentinel security review: 0 critical, 3 warnings, 5 suggestions)
-- [x] Phase 5: Team Assembly (5 agents installed, 7 skills assigned, Section 13 populated)
+- [x] Phase 2: Tooling & Security (8 evaluated, 2 approved, 3 rejected, 1 deferred)
+- [x] Phase 3: Strategic Review (15 confirmed, 6 adjusted, 18 directives)
+- [x] Phase 4: Architecture Blueprint (20 block specs, Sentinel review: 0 critical)
+- [x] Phase 5: Team Assembly (5 agents, 7 skills, Section 13 populated)
 
 ## In Progress
 
-- [ ] Block 01: Database Models (next)
+- [ ] Block 02: Auth & Users (next)
 
 ## Pending
 
-- [ ] Blocks 02-19
-- [x] Block 00: Project Scaffolding (all gates pass, Docker 4/6 healthy)
+- [ ] Blocks 03-19
 
-## Notes
+## Recently Completed
 
-- Dual objective: portfolio + consultant showcase
-- Phase 4 security review: docs/reviews/phase-4-security-review.md
+- [x] Block 01: Database Models (9 models, 132 tests, Sentinel pass)
+- [x] Block 00: Scaffolding (Docker 4/6 healthy)
 
 ## Team & Tooling
 

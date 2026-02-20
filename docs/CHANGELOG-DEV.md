@@ -73,3 +73,18 @@
 - Tests: 33 tests (10 config + 23 sanitizer) — all passing
 - Quality gates: ruff format 0 diffs, ruff check 0 violations, mypy strict 0 errors, pytest 33/33 pass
 - Docker verification deferred (Docker Desktop not running)
+
+## 2026-02-20 -- Block 01: Database Models & Migrations
+
+- 9 SQLAlchemy 2.0 models: Email (12-state machine), ActionCategory, TypeCategory, ClassificationResult, RoutingRule, RoutingAction, Draft, User, CRMSyncRecord, ClassificationFeedback
+- EmailState as PostgreSQL ENUM (not VARCHAR) — DB-level enforcement (pre-mortem Cat 1)
+- Categories as FK-backed DB tables — prevents LLM hallucination from corrupting classification (Cat 3)
+- TypedDicts for all JSONB fields: RecipientData, AttachmentData, RoutingConditions, RoutingActions
+- `transition_to()` with full contract docstring: invariants, guarantees, errors, state transitions
+- Dual session factories: AsyncSessionLocal (FastAPI + asyncpg) + SyncSessionLocal (Celery + psycopg2)
+- Alembic migration: 10 tables, 6 enum types, 14 seed rows (4 action + 10 type categories)
+- Seed data: deterministic UUIDs, exactly 1 fallback per category type (unknown/other)
+- Settings: added `extra="ignore"` for Docker env var tolerance
+- 132 tests: 69 unit (state machine + imports) + 34 integration (seeds + migrations + FK enforcement)
+- Sentinel review: PASS WITH WARNINGS (docs/reviews/block-01-sentinel-review.md)
+- Quality gates: mypy 0 errors (26 files), ruff check 0 violations, ruff format 0 diffs

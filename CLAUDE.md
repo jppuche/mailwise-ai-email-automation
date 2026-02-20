@@ -121,3 +121,6 @@ Configured in .claude/settings.local.json (do not commit).
 - pyproject.toml: build-backend is `setuptools.build_meta` (NOT `setuptools.backends._legacy`). For `from src.X` imports: `where = ["."]` + `include = ["src*"]`
 - mypy type-ignore codes: structlog `get_logger()` returns `Any` — use `type: ignore[no-any-return]` not `[return-value]`
 - Docker at block-00: worker/scheduler exit (no celery_app yet) — 4/6 services healthy is expected baseline
+- Alembic enums: use `create_type=True` inline in `op.create_table`, NOT separate `.create()` calls — SQLAlchemy's `_on_table_create` ignores `create_type=False` from Alembic's DDL path
+- Alembic env.py: sync driver (psycopg2), no Base import, `target_metadata=None` for hand-written migrations
+- Test DB fixtures: NullPool mandatory, `migrated_db` upgrade-only (no teardown downgrade) — PostgreSQL blocks DDL while sessions hold connections

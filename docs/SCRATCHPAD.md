@@ -92,3 +92,28 @@ Compound learning: each session reads this file before working.
 - pyproject.toml build-backend + packages.find config
 - mypy `type: ignore[no-any-return]` for structlog
 - Docker 4/6 healthy baseline at B00
+
+---
+
+## 2026-02-20 -- Block 01 (consolidated) [backend-worker + Inquisidor]
+
+### B01 decisions (now in code)
+
+- `StrEnum` for all str enums (ruff UP042). `alembic/script.py.mako` is correct filename.
+- `database.py` eager engine creation — importing without `.env` fails. `conftest.py` env defaults protect tests.
+- Settings needs `extra="ignore"` — Docker env vars (`POSTGRES_*`) cause ValidationError otherwise.
+- Alembic env.py: sync driver (psycopg2), NOT async. No Base import, `target_metadata = None`.
+- Alembic enums: `create_type=True` inline in `op.create_table` — NOT separate `.create()` calls. SQLAlchemy's `_on_table_create` ignores `create_type=False` from Alembic's DDL path.
+- `_make_email()` in tests: use `Email(...)` constructor, NOT `Email.__new__()` — ORM instrumentation requires `__init__`.
+- Test engine: `NullPool` mandatory. `migrated_db` fixture: upgrade-only (no teardown downgrade). PostgreSQL blocks DDL while sessions hold connections — even with NullPool, open sessions block DROP TABLE.
+- `sys.executable -m alembic` in subprocess calls — `alembic` not in PATH on Windows.
+- Integration tests: `--run-integration` flag, Alembic API (not subprocess) for in-process migrations.
+- Downgrade tests must restore schema (`upgrade head`) after assertions for subsequent test classes.
+
+### B01 test coverage (132 tests total)
+
+- `test_email_state.py`: 35 unit tests (state machine transitions, recovery paths, terminal state)
+- `test_models_import.py`: 34 unit tests (models, enums, TypedDicts, metadata, session factories)
+- `test_categories_seed.py`: 17 integration tests (seed slugs, counts, fallback flags)
+- `test_migrations.py`: 17 integration tests (tables, indices, enums, FKs, idempotency, roundtrip)
+- **Graduated to CLAUDE.md**: Alembic enum + NullPool + `migrated_db` patterns
