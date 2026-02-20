@@ -15,20 +15,19 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 - [x] Phase 4: Architecture Blueprint (20 block specs, Sentinel security review: 0 critical, 3 warnings, 5 suggestions)
 - [x] Phase 5: Team Assembly (5 agents installed, 7 skills assigned, Section 13 populated)
 
+## In Progress
+
+- [ ] Block 01: Database Models (next)
+
 ## Pending
 
-- [ ] Phase N: Development Blocks (start with block-00-scaffolding)
-
-## Blockers
-
-None
+- [ ] Blocks 02-19
+- [x] Block 00: Project Scaffolding (all gates pass, Docker 4/6 healthy)
 
 ## Notes
 
-- Dual objective: portfolio (AI Engineer) + consultant showcase
-- Phase order: 2→3→5→4 (agents before specs)
+- Dual objective: portfolio + consultant showcase
 - Phase 4 security review: docs/reviews/phase-4-security-review.md
-- D16 corrected: 5-layer prompt injection defense (Sec 11.2 + Sec 4.5) — DECISIONS.md updated
 
 ## Team & Tooling
 
@@ -57,4 +56,4 @@ None
 | honnibal/alignment-chart | Installed | Inquisidor | Function/test categorization |
 | honnibal/concept-analysis | Installed | Lorekeeper | Domain glossary, naming consistency |
 
-### Rejected: PostgreSQL MCP (SQLi), SAST MCP (untrusted), HubSpot MCP (deferred), Slack MCP (redundant), laurigates skill (redundant)
+Rejected: PostgreSQL MCP, SAST MCP, HubSpot MCP (deferred), Slack MCP, laurigates skill

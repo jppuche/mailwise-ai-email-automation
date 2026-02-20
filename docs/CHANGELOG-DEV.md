@@ -62,3 +62,14 @@
 - Tier 2 features explicitly assigned to blocks
 - Dependency DAG verified acyclic
 - D16 discrepancy found: specs implement 5-layer prompt injection defense (not 4 as in DECISIONS.md) — pending correction
+
+## 2026-02-20 -- Block 00: Project Scaffolding
+
+- Python package: pyproject.toml with all runtime + dev deps, ruff/mypy/pytest config
+- src/ layout: core/ (config, sanitizer, logging), adapters/ (email, channel, crm, llm), services/, api/, models/, tasks/
+- Core modules: Settings (14 load-bearing defaults), SanitizedText NewType + sanitize_email_body, structlog PII-safe logging
+- Docker: Dockerfile (Python 3.12-slim multi-stage), Dockerfile.frontend (Node 20 + Nginx), docker-compose.yml (6 services), docker-compose.dev.yml
+- Frontend: Vite 7 + React 19 + TypeScript scaffold with auth context, theme, routing, API layer (frontend-worker)
+- Tests: 33 tests (10 config + 23 sanitizer) — all passing
+- Quality gates: ruff format 0 diffs, ruff check 0 violations, mypy strict 0 errors, pytest 33/33 pass
+- Docker verification deferred (Docker Desktop not running)
