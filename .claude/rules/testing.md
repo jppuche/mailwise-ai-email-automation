@@ -1,0 +1,12 @@
+---
+paths:
+  - "tests/**"
+  - "**/test_*.py"
+  - "**/*_test.py"
+---
+- Tests unitarios para TODA logica de negocio
+- Tests de integracion para TODOS los API endpoints
+- E2E para flujos criticos del usuario
+- Nomenclatura: describe('ComponentName') > it('should behavior')
+- Validacion visual: screenshots/dev tools para cambios de UI (si aplica)
+- Mocks: mockear servicios externos, no la DB en tests de integracion

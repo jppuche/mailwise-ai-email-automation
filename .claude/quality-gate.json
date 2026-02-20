@@ -1,0 +1,9 @@
+{
+  "commands": {
+    "typecheck": "mypy src/",
+    "lint": "ruff check .",
+    "format": "ruff format --check .",
+    "test": "pytest"
+  },
+  "timeout_seconds": 120
+}

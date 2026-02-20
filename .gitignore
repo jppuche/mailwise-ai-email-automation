@@ -1,0 +1,24 @@
+# Claude Code local settings (not for sharing)
+.claude/settings.local.json
+
+# Security audit logs
+.claude/security/audit-*.log
+
+# Local project memory
+*.local.md
+
+# Lorekeeper session markers
+.claude/lorekeeper-pending.json
+.claude/lorekeeper-session-active.marker
+
+# Secrets
+secrets/
+.env
+.env.*
+
+# Embedded git repos (predecessor project)
+Preproyecto/5_n8n_Email_Organizer/
+
+# OS
+.DS_Store
+Thumbs.db

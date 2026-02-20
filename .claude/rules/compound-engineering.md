@@ -1,0 +1,13 @@
+---
+paths:
+  - "CLAUDE.md"
+  - "docs/SCRATCHPAD.md"
+---
+- Graduacion: patron repetido 3+ veces en SCRATCHPAD.md → mover a CLAUDE.md "Learned Patterns"
+- Formato en CLAUDE.md: `### Block/Phase N: Name` luego `- patron -- contexto minimo`
+- Al graduar: eliminar entradas originales de SCRATCHPAD.md
+- Si CLAUDE.md > 180 lineas: podar con prueba de relevancia ("si elimino esta linea, Claude cometeria errores?")
+- SCRATCHPAD.md limite: 150 lineas. Podar entradas antiguas ya graduadas primero
+- SCRATCHPAD.md > 100 lineas: revisar activamente candidatos de graduacion antes de agregar nuevas entradas
+- Graduation automation: session-end hook detecta patrones que aparecen en 3+ sesiones y sugiere candidatos al inicio de la siguiente sesion
+- Revisar candidatos sugeridos por Lorekeeper al inicio de sesion — aceptar, rechazar, o diferir cada uno
