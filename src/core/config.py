@@ -62,6 +62,12 @@ class Settings(BaseSettings):
     slack_bot_token: str = Field(default="")
     slack_signing_secret: str = Field(default="")
 
+    # Channel Adapter (Cat 8: configurable defaults)
+    channel_snippet_length: int = Field(default=150)
+    channel_subject_max_length: int = Field(default=100)
+    channel_slack_timeout_seconds: int = Field(default=10)
+    channel_destinations_page_size: int = Field(default=200)
+
     # HubSpot
     hubspot_access_token: str = Field(default="")
 

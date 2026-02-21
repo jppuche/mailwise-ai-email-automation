@@ -24,12 +24,6 @@ Compound learning: each session reads this file before working.
 
 ### Standing architecture decisions (spec-level, not yet in code)
 
-- [B00] `SanitizedText = NewType(...)` — branded type. PII policy: email_id only in logs.
-- [B01] EmailState/ActionCategory/TypeCategory as PostgreSQL ENUMs + DB tables. `alembic.ini` URL never set (Settings override). `transition_to()` outside try/except — failure is a logic bug.
-- [B02] Refresh tokens: opaque UUIDs in Redis (not JWTs). `redis_client.py` in `src/adapters/`.
-- [B03] Deduplication in calling service, not adapter. `test_connection()` silences all errors (health-check semantics).
-- [B04] LLM parser: pure local computation, 7 output shapes, conditionals only. `LLM_FALLBACK_MODEL` must differ from classify model. `OutputParseError` never re-raised to caller.
-- [B05] `SlackApiError` classified by `response["error"]` string (Slack returns 200 OK on errors). `SlackBlockKitFormatter` is pure local computation.
 - [B06] `ActivityId`/`LeadId` as NewType. Duplicate contacts: most recent by `createdate`. Snippet truncated by calling SERVICE not adapter.
 - [B07] `IngestionResult` frozen dataclass. Lock key per account_id. Two independent commits per email (FETCHED then SANITIZED).
 - [B08] ClassificationResult naming collision: alias `AdapterClassificationResult`. Heuristics NEVER override LLM — only lower confidence. PromptBuilder/HeuristicClassifier: 0 try/except (enforced by grep in exit conditions).
@@ -44,8 +38,6 @@ Compound learning: each session reads this file before working.
 - [B17] `Chart.tsx` encapsulates ALL recharts imports. `ChartDataPoint` transformation in Page component. Rules sorted by `priority` in hook.
 - [B18] alignment-chart categorization enforced as exit criteria. `CELERY_TASK_ALWAYS_EAGER=True` for E2E. Mocked adapters implement ABCs (Cat 10). `pytest --cov-fail-under=70`.
 - [B19] `CorrelationIdContext` via contextvars. Docker images pinned to patch. `CORS_ORIGINS` no default (fail-fast). Adapter guide: 5-step pattern.
-- [tooling] Async Alembic: `run_sync` pattern. `gh` CLI not installed — WebFetch fallback. mypy before ruff (type errors cause ruff false positives).
-- [security] Agent context boundary confusion: always verify security findings with hex dump before acting.
 
 ### Open questions — unresolved (carry to development blocks)
 
@@ -66,84 +58,50 @@ Compound learning: each session reads this file before working.
 
 ---
 
-## 2026-02-20 -- Block 00 + Phase 4 close (consolidated) [Lorekeeper]
-
-### Security findings (carry forward — implement in respective blocks)
+## 2026-02-20 -- Security findings (carry forward) [Lorekeeper]
 
 - WARNING-01: `LLM_ALLOWED_MODELS` allowlist needed (B04/B14)
 - WARNING-02: `DRAFT_ORG_SYSTEM_PROMPT` max-length + startup warning (B11)
 - WARNING-03: `next(..., None)` for fallback category (B08)
 - WARNING-B02-01: Timing oracle in login — bcrypt not called for nonexistent users (B02)
 
-### B00 decisions (now in code)
-
-- `src/api/main.py` minimal `/health` — Docker health check dependency
-- `conftest.py` at root: `os.environ.setdefault()` for CI without `.env`
-- Python 3.14 on host; Docker 3.12-slim. Worker/scheduler exit expected until B12.
-
-### B15 decisions (now in code)
-
-- Vite 7 flat ESLint config, `react-refresh` warn for contexts, placeholder `api.ts`
-- `configureClient()` in AuthProvider useEffect avoids circular dep
-- Bundle: 107.97 KB gzip (limit 200 KB). Node 24.13.0, npm 11.6.2.
-
----
-
-## 2026-02-20 -- Block 01 (consolidated) [backend-worker + Inquisidor]
-
-- `sys.executable -m alembic` on Windows — `alembic` not in PATH.
-- Integration tests: `--run-integration` flag, Alembic API for in-process migrations.
-
 ---
 
 ## 2026-02-21 -- Block 02 Auth & Users (consolidated) [Lorekeeper]
 
-### B02 decisions (now in code)
-
 - `HTTPBearer(auto_error=False)` for custom 401 (FastAPI default returns 403)
 - `override_db` fixture: NullPool engine + `app.dependency_overrides[get_async_db]`
-- `admin_user`/`reviewer_user` fixtures: separate NullPool engines to avoid session entanglement
 - Test-only RBAC endpoints registered on `app` at module load; `# noqa: B008` on Depends defaults
-- 231 total tests (13u security, 19u schemas, 17i endpoints, 7i redis)
-
-### B02 Sentinel review: PASS (0 CRITICAL, 1 WARNING)
-
-- WARNING-B02-01: Timing oracle in login (mitigated: single-tenant + future rate limiting)
-- Suggestions deferred: password max_length, jwt_algorithm Literal, cors_origins default
+- Sentinel PASS (0 CRITICAL, 1 WARNING: timing oracle in login — mitigated, single-tenant)
 
 ---
 
 ## 2026-02-21 -- Block 03 Gmail Adapter [backend-worker]
 
-### B03 decisions (now in code)
-
-- `DraftId = NewType("DraftId", str)` — follows `SanitizedText` pattern from sanitizer.py
-- Adapter `RecipientData` omits `type` field (implicit in list: to_addresses vs cc_addresses)
-- Adapter `AttachmentData` includes `attachment_id` (matches ORM, avoids data loss at boundary)
-- `_service: Any | None` — untyped SDK stays private, `assert self._service is not None` after `_ensure_connected()` for mypy
-- `timezone.utc` → `datetime.UTC` alias required by ruff UP017
+- `_service: Any | None` — untyped SDK stays private; `assert self._service is not None` after `_ensure_connected()` for mypy
 - `except (KeyError, ValueError, TypeError)` for per-message parse isolation (not bare Exception)
-- `# noqa: BLE001` on `test_connection()` — only bare except in adapter (health-check semantics)
 - google modules in mypy `ignore_missing_imports` — no `type: ignore[import-untyped]` needed on imports
 - `Credentials()` constructor needs `# type: ignore[no-untyped-call]`
-- 85 new tests (18u schemas, 23u parsing, 15 contract, 29u adapter), 258 total passing
 
 ---
 
-## 2026-02-21 -- Block 04 LLM Adapter (consolidated) [backend-worker + Lorekeeper]
+## 2026-02-21 -- Block 04 LLM Adapter [backend-worker]
 
-### B04 decisions (now in code)
-
-- `import litellm.exceptions as litellm_exc` — mypy-compatible path; `litellm.RateLimitError` direct access triggers `attr-defined` even with `ignore_missing_imports = true` for `litellm.*`
-- `litellm_exc.Timeout` (not `litellm_exc.TimeoutError`) — litellm names it `Timeout`
 - `litellm.api_key` / `litellm.api_base` set as globals in `__init__` (LiteLLM uses global config)
-- `_safe_json_loads` is the single D8 exception: `json.loads` has no conditional alternative — documented with inline comment
-- `_JSON_OBJECT_RE = re.compile(r"\{[^{}]*\}")` — flat brace match sufficient for classification JSON
-- Regex constants compiled at module level (`_THINKING_TAG_RE`, `_MARKDOWN_FENCE_RE`, `_JSON_OBJECT_RE`) — not inside functions
-- `ClassifyOptions.allowed_actions/allowed_types`: `Field(min_length=1)` enforces non-empty list (D1)
-- `ConnectionTestResult.error_detail` (not `error`) — avoids naming collision with email adapter schema
-- Fallback path logs `llm_parse_fallback` with `raw_output_preview=raw_output[:200]` (PII-safe)
 - Mock target: `@patch("src.adapters.llm.litellm_adapter.litellm.acompletion")` — patch at import site
 - Post-construction mutation bypasses `Field(min_length=1)` — use for testing guard logic inside adapter
 - litellm exception positional arg order: use keyword args in tests to avoid positional ambiguity
-- 106 new tests (29u schemas, 28u parser, 35u adapter, 14 contract), 364 total passing
+
+---
+
+## 2026-02-21 -- Block 05 Slack Channel Adapter [backend-worker + Lorekeeper]
+
+- `send_notification(payload, destination_id)` — destination is separate param (spec had it in payload)
+- `asyncio.TimeoutError` → `TimeoutError` (ruff UP041, Python 3.11+)
+- `structlog.get_logger()` no longer needs `# type: ignore[no-any-return]` on this Python/structlog version
+- `dict[str, object]` for Block Kit output (not `dict[str, Any]` — tighten-types D1)
+- `contextlib.suppress` instead of `try/except/pass` for Retry-After int parsing (ruff SIM105)
+- `_AUTH_ERROR_CODES` / `_DELIVERY_ERROR_CODES` as module-level `frozenset` (Cat 3)
+- Contract tests: MockChannelAdapter validates bot_token non-empty + "xoxb-" prefix in connect()
+- Pre-existing mypy errors in `slack.py` (3: var-annotated, call-overload, unused-ignore) — not introduced by B05
+- 103 new tests (36 schemas, 22 formatter, 29 adapter, 16 contract), 467 total

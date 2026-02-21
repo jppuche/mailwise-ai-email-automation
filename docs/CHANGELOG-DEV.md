@@ -116,6 +116,18 @@
 - 85 new tests: 18 schema, 23 parsing, 15 contract (MockEmailAdapter), 29 adapter (mocked Google API)
 - 258 total tests passing; quality gates: ruff 0, mypy 0, D1 no dict[str, Any] at boundaries
 
+## 2026-02-21 -- Block 05: Slack Channel Adapter
+
+- ChannelAdapter ABC with 4 async methods (connect, send_notification, test_connection, get_available_destinations)
+- SlackAdapter concrete implementation using slack-sdk AsyncWebClient
+- SlackBlockKitFormatter: pure local computation, 3 priority levels, Block Kit structure
+- 5 domain exceptions with original_error chain (ChannelAdapterError base + Auth, RateLimit, Connection, Delivery)
+- 8 Pydantic boundary schemas (no dict[str, Any]) — `dict[str, object]` for Block Kit output (D1)
+- 4 configurable defaults (snippet_length=150, subject_max=100, timeout=10s, page_size=200)
+- `_AUTH_ERROR_CODES` / `_DELIVERY_ERROR_CODES` as module-level frozenset (Cat 3: no magic strings)
+- `contextlib.suppress` for Retry-After int parsing (ruff SIM105); `TimeoutError` not `asyncio.TimeoutError` (UP041)
+- 103 new tests (36 schema, 22 formatter, 29 adapter, 16 contract), 467 total
+
 ## 2026-02-21 -- Block 04: LLM Adapter
 
 - LLMAdapter ABC with 3 async abstract methods (classify, generate_draft, test_connection) and contract docstrings

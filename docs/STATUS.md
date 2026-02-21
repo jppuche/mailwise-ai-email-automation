@@ -17,11 +17,12 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 05: Slack Channel Adapter (next)
-- [ ] Blocks 06-19 (pending)
+- [ ] Block 06: HubSpot CRM Adapter (next)
+- [ ] Blocks 07-19 (pending)
 
 ## Recently Completed
 
+- [x] Block 05: Slack Channel Adapter (SlackAdapter, Block Kit formatter, 103 tests, 467 total)
 - [x] Block 04: LLM Adapter (LiteLLMAdapter, 7-shape parser, 106 tests, 364 total)
 - [x] Block 03: Gmail Adapter (ABC + GmailAdapter, 85 tests, 258 total)
 - [x] Block 02: Auth & Users (JWT+bcrypt, Redis refresh tokens, RBAC, 231 tests)
