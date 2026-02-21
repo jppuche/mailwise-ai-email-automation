@@ -48,6 +48,11 @@ class Settings(BaseSettings):
     gmail_client_secret: str = Field(default="")
     gmail_redirect_uri: str = Field(default="http://localhost:8000/api/v1/auth/gmail/callback")
 
+    # Gmail Adapter (Cat 8: configurable defaults)
+    gmail_max_results: int = Field(default=100)
+    gmail_credentials_file: str = Field(default="secrets/gmail_credentials.json")
+    gmail_token_file: str = Field(default="secrets/gmail_token.json")
+
     # Slack
     slack_bot_token: str = Field(default="")
     slack_signing_secret: str = Field(default="")

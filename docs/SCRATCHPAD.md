@@ -87,23 +87,12 @@ Compound learning: each session reads this file before working.
 - `configureClient()` in AuthProvider useEffect avoids circular dep
 - Bundle: 107.97 KB gzip (limit 200 KB). Node 24.13.0, npm 11.6.2.
 
-### Graduated to CLAUDE.md Learned Patterns
-
-- pyproject.toml build-backend + packages.find config
-- mypy `type: ignore[no-any-return]` for structlog
-- Docker 4/6 healthy baseline at B00
-
 ---
 
 ## 2026-02-20 -- Block 01 (consolidated) [backend-worker + Inquisidor]
 
-### B01 decisions (now in code, key patterns graduated to CLAUDE.md)
-
-- `StrEnum` for all str enums (ruff UP042). Settings needs `extra="ignore"` (Docker env vars).
-- Alembic env.py: sync psycopg2, no Base import, `target_metadata = None`.
 - `sys.executable -m alembic` on Windows — `alembic` not in PATH.
 - Integration tests: `--run-integration` flag, Alembic API for in-process migrations.
-- 132 tests: test_email_state (35u), test_models_import (34u), test_categories_seed (17i), test_migrations (17i).
 
 ---
 
@@ -111,36 +100,30 @@ Compound learning: each session reads this file before working.
 
 ### B02 decisions (now in code)
 
-- `bcrypt` used directly — passlib 1.7.4 incompatible with bcrypt>=4.2 on Python 3.14 (graduated to CLAUDE.md)
-- `from jose.exceptions import JWTClaimsError` — not re-exported from `jose` top level (graduated to CLAUDE.md)
-- `sa.Enum(StrEnum, values_callable=_enum_values)` on all 5 non-EmailState enums (graduated to CLAUDE.md)
-- `_enum_values()` helper in `src/models/base.py` shared by all models
 - `HTTPBearer(auto_error=False)` for custom 401 (FastAPI default returns 403)
-- TokenPayload as TypedDict (spec open question resolved)
-- `override_db` fixture: NullPool engine + `app.dependency_overrides[get_async_db]` — correct FastAPI integration test pattern
-- `admin_user`/`reviewer_user` fixtures: separate NullPool engines for DB inserts to avoid session entanglement
-- `migrated_db_module`: `Generator[None, None, None]` with explicit `yield` — mypy strict rejects `-> None` with `type: ignore[return]`
-- Test-only RBAC endpoints registered on `app` at module load; `# noqa: B008` on FastAPI `Depends` in default args
-- Source inspection pitfall: `"try" not in source` catches substrings in docstrings — avoid words containing "try"/"except" in docstrings of tested functions
-- Docker Compose db/redis: `ports:` must be exposed for local integration tests
-- Root conftest.py DB credentials: must match Docker Compose (mailwise:password, not test:test)
+- `override_db` fixture: NullPool engine + `app.dependency_overrides[get_async_db]`
+- `admin_user`/`reviewer_user` fixtures: separate NullPool engines to avoid session entanglement
+- Test-only RBAC endpoints registered on `app` at module load; `# noqa: B008` on Depends defaults
+- 231 total tests (13u security, 19u schemas, 17i endpoints, 7i redis)
 
-### B02 open questions resolved
+### B02 Sentinel review: PASS (0 CRITICAL, 1 WARNING)
 
-- [inquisidor] B02: TypedDict vs dataclass for TokenPayload → **TypedDict** (chosen)
+- WARNING-B02-01: Timing oracle in login (mitigated: single-tenant + future rate limiting)
+- Suggestions deferred: password max_length, jwt_algorithm Literal, cors_origins default
 
-### B02 test coverage (42 new tests, 231 total)
+---
 
-- `tests/unit/test_security.py`: 13 unit tests (hash, verify, access token, claims, refresh token, TokenPayload)
-- `tests/unit/test_auth_schemas.py`: 19 unit tests (LoginRequest, TokenResponse, RefreshRequest, UserResponse)
-- `tests/integration/test_auth_endpoints.py`: 17 tests (login, refresh, logout, me, RBAC)
-- `tests/integration/test_redis_client.py`: 7 tests (lifecycle, error handling, TTL)
+## 2026-02-21 -- Block 03 Gmail Adapter [backend-worker]
 
-### B02 Sentinel security review [sentinel] [security]
+### B03 decisions (now in code)
 
-- PASS — 0 CRITICAL, 1 WARNING, 4 SUGGESTIONS. Full report: `docs/reviews/block-02-auth-security-review.md`
-- WARNING-B02-01: Timing oracle in login (bcrypt short-circuit for nonexistent user). Mitigated by single-tenant + future rate limiting.
-- SUGGESTION-B02-01: password max_length=128 on LoginRequest schema (bcrypt 72-byte truncation + DoS)
-- SUGGESTION-B02-02: jwt_algorithm should be Literal["HS256","HS384","HS512"] not free-form str
-- SUGGESTION-B02-03: No refresh token family tracking (acceptable single-tenant)
-- SUGGESTION-B02-04: cors_origins has default — contradicts B19 "no default" (defer to B19)
+- `DraftId = NewType("DraftId", str)` — follows `SanitizedText` pattern from sanitizer.py
+- Adapter `RecipientData` omits `type` field (implicit in list: to_addresses vs cc_addresses)
+- Adapter `AttachmentData` includes `attachment_id` (matches ORM, avoids data loss at boundary)
+- `_service: Any | None` — untyped SDK stays private, `assert self._service is not None` after `_ensure_connected()` for mypy
+- `timezone.utc` → `datetime.UTC` alias required by ruff UP017
+- `except (KeyError, ValueError, TypeError)` for per-message parse isolation (not bare Exception)
+- `# noqa: BLE001` on `test_connection()` — only bare except in adapter (health-check semantics)
+- google modules in mypy `ignore_missing_imports` — no `type: ignore[import-untyped]` needed on imports
+- `Credentials()` constructor needs `# type: ignore[no-untyped-call]`
+- 85 new tests (18u schemas, 23u parsing, 15 contract, 29u adapter), 258 total passing

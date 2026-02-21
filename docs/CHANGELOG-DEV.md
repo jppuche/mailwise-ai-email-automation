@@ -102,3 +102,16 @@
 - Docker Compose db/redis: added `ports:` for local integration test access
 - Root conftest.py DB credentials aligned to Docker Compose (mailwise:password)
 - 231 total tests pass (42 new B02 + 189 existing); quality gates: ruff check, ruff format, mypy all clean
+
+## 2026-02-21 -- Block 03: Gmail Adapter
+
+- EmailAdapter ABC with 7 abstract methods and contract docstrings (4-question format)
+- GmailAdapter concrete implementation: OAuth2 connect, fetch with pagination, MIME parsing, draft creation, label management, health-check test_connection
+- Exception hierarchy: EmailAdapterError base + 6 specific types (AuthError, RateLimitError, EmailConnectionError, FetchError, DraftCreationError, LabelError) with original_error field
+- Typed boundary schemas: EmailMessage (Pydantic), EmailCredentials, ConnectionStatus, ConnectionTestResult, DraftId (NewType), Label, RecipientData/AttachmentData (TypedDicts)
+- Schema reconciliation: adapter RecipientData omits `type` field (implicit in list membership), adapter AttachmentData includes `attachment_id` (matches ORM)
+- try-except D7: structured HttpError mapping by status code (401→AuthError, 429→RateLimitError, 5xx→EmailConnectionError)
+- try-except D8: argument validation uses conditionals, per-message parse failure isolated (log + continue)
+- Settings: added gmail_max_results (Cat 8), gmail_credentials_file, gmail_token_file
+- 85 new tests: 18 schema, 23 parsing, 15 contract (MockEmailAdapter), 29 adapter (mocked Google API)
+- 258 total tests passing; quality gates: ruff 0, mypy 0, D1 no dict[str, Any] at boundaries
