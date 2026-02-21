@@ -128,3 +128,4 @@ Configured in .claude/settings.local.json (do not commit).
 - python-jose: `JWTClaimsError` NOT exported from top-level `jose` — always import `from jose.exceptions import JWTClaimsError`
 - SQLAlchemy `sa.Enum(StrEnum)`: uses `.name` (UPPERCASE) not `.value` (lowercase) — add `values_callable=lambda e: [m.value for m in e]` on all StrEnum columns to match Alembic-created PostgreSQL enum values
 - Redis async singleton in tests: function-scoped pytest-asyncio loops don't share singletons — reset `_redis_client = None` between test functions via autouse fixture
+- litellm exceptions: use `import litellm.exceptions as litellm_exc` — `litellm.RateLimitError` direct access triggers mypy `attr-defined` even with `ignore_missing_imports = true`; exception is named `Timeout` (not `TimeoutError`)

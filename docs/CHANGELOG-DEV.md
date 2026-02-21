@@ -115,3 +115,19 @@
 - Settings: added gmail_max_results (Cat 8), gmail_credentials_file, gmail_token_file
 - 85 new tests: 18 schema, 23 parsing, 15 contract (MockEmailAdapter), 29 adapter (mocked Google API)
 - 258 total tests passing; quality gates: ruff 0, mypy 0, D1 no dict[str, Any] at boundaries
+
+## 2026-02-21 -- Block 04: LLM Adapter
+
+- LLMAdapter ABC with 3 async abstract methods (classify, generate_draft, test_connection) and contract docstrings
+- LiteLLMAdapter concrete implementation: classify with fallback, generate_draft, health-check test_connection
+- Exception hierarchy: LLMAdapterError base + 4 subclasses (OutputParseError, LLMRateLimitError, LLMTimeoutError, LLMConnectionError)
+- 7-shape output parser: handles pure JSON, thinking-tag-wrapped, markdown-fenced, JSON embedded in text, and mixed combinations
+- Typed boundary schemas: ClassificationResult, DraftText, ClassifyOptions, DraftOptions, LLMConfig, ConnectionTestResult (Pydantic)
+- try-except D7: three structured blocks mapping litellm exceptions (RateLimitError, Timeout, APIConnectionError) to adapter hierarchy
+- try-except D8: `_safe_json_loads` is the only exception — `json.loads` has no conditional alternative (documented inline)
+- Settings: 5 new LLM settings added to `src/core/config.py` (llm_classify_model, llm_draft_model, llm_fallback_model, llm_classify_temperature, llm_draft_temperature)
+- classify() fallback: `action="inform"`, `type="notification"`, `confidence="low"`, `fallback_applied=True` on OutputParseError
+- generate_draft() propagates errors to caller — free-text has no safe default (contrast with classify fallback)
+- Fallback logs `llm_parse_fallback` with `raw_output_preview=raw_output[:200]` (PII-safe: LLM output only)
+- 106 new tests: 29 schema, 28 parser, 35 adapter (mocked litellm.acompletion), 14 contract
+- 364 total tests passing; quality gates: mypy 0 errors, ruff 0 violations, pytest 364/364

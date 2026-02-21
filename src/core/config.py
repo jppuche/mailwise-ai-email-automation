@@ -38,6 +38,11 @@ class Settings(BaseSettings):
     llm_temperature_draft: float = Field(default=0.7)
     openai_api_key: str = Field(default="")
     anthropic_api_key: str = Field(default="")
+    llm_fallback_model: str = Field(default="gpt-3.5-turbo")
+    llm_timeout_seconds: int = Field(default=30)
+    llm_classify_max_tokens: int = Field(default=500)
+    llm_draft_max_tokens: int = Field(default=2000)
+    llm_base_url: str = Field(default="")
 
     # Celery
     celery_max_retries: int = Field(default=3)

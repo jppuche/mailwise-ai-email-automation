@@ -127,3 +127,23 @@ Compound learning: each session reads this file before working.
 - google modules in mypy `ignore_missing_imports` — no `type: ignore[import-untyped]` needed on imports
 - `Credentials()` constructor needs `# type: ignore[no-untyped-call]`
 - 85 new tests (18u schemas, 23u parsing, 15 contract, 29u adapter), 258 total passing
+
+---
+
+## 2026-02-21 -- Block 04 LLM Adapter (consolidated) [backend-worker + Lorekeeper]
+
+### B04 decisions (now in code)
+
+- `import litellm.exceptions as litellm_exc` — mypy-compatible path; `litellm.RateLimitError` direct access triggers `attr-defined` even with `ignore_missing_imports = true` for `litellm.*`
+- `litellm_exc.Timeout` (not `litellm_exc.TimeoutError`) — litellm names it `Timeout`
+- `litellm.api_key` / `litellm.api_base` set as globals in `__init__` (LiteLLM uses global config)
+- `_safe_json_loads` is the single D8 exception: `json.loads` has no conditional alternative — documented with inline comment
+- `_JSON_OBJECT_RE = re.compile(r"\{[^{}]*\}")` — flat brace match sufficient for classification JSON
+- Regex constants compiled at module level (`_THINKING_TAG_RE`, `_MARKDOWN_FENCE_RE`, `_JSON_OBJECT_RE`) — not inside functions
+- `ClassifyOptions.allowed_actions/allowed_types`: `Field(min_length=1)` enforces non-empty list (D1)
+- `ConnectionTestResult.error_detail` (not `error`) — avoids naming collision with email adapter schema
+- Fallback path logs `llm_parse_fallback` with `raw_output_preview=raw_output[:200]` (PII-safe)
+- Mock target: `@patch("src.adapters.llm.litellm_adapter.litellm.acompletion")` — patch at import site
+- Post-construction mutation bypasses `Field(min_length=1)` — use for testing guard logic inside adapter
+- litellm exception positional arg order: use keyword args in tests to avoid positional ambiguity
+- 106 new tests (29u schemas, 28u parser, 35u adapter, 14 contract), 364 total passing

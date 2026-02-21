@@ -17,14 +17,12 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 04: LLM Adapter (next)
-
-## Pending
-
-- [ ] Blocks 05-19
+- [ ] Block 05: Slack Channel Adapter (next)
+- [ ] Blocks 06-19 (pending)
 
 ## Recently Completed
 
+- [x] Block 04: LLM Adapter (LiteLLMAdapter, 7-shape parser, 106 tests, 364 total)
 - [x] Block 03: Gmail Adapter (ABC + GmailAdapter, 85 tests, 258 total)
 - [x] Block 02: Auth & Users (JWT+bcrypt, Redis refresh tokens, RBAC, 231 tests)
 - [x] Block 01: Database Models (9 models, 132 tests, Sentinel pass)
