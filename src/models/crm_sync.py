@@ -16,7 +16,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.models.base import Base, TimestampMixin
+from src.models.base import Base, TimestampMixin, _enum_values
 
 
 class CRMSyncStatus(StrEnum):
@@ -47,7 +47,12 @@ class CRMSyncRecord(Base, TimestampMixin):
     activity_id: Mapped[str | None] = mapped_column(sa.String(255), nullable=True)
     lead_id: Mapped[str | None] = mapped_column(sa.String(255), nullable=True)
     status: Mapped[CRMSyncStatus] = mapped_column(
-        sa.Enum(CRMSyncStatus, name="crmsyncstatus", create_type=True),
+        sa.Enum(
+            CRMSyncStatus,
+            name="crmsyncstatus",
+            create_type=True,
+            values_callable=_enum_values,
+        ),
         nullable=False,
     )
     synced_at: Mapped[datetime.datetime] = mapped_column(

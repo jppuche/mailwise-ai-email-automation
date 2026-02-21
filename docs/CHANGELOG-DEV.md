@@ -88,3 +88,17 @@
 - 132 tests: 69 unit (state machine + imports) + 34 integration (seeds + migrations + FK enforcement)
 - Sentinel review: PASS WITH WARNINGS (docs/reviews/block-01-sentinel-review.md)
 - Quality gates: mypy 0 errors (26 files), ruff check 0 violations, ruff format 0 diffs
+
+## 2026-02-21 -- Block 02: Auth & Users
+
+- JWT auth via python-jose: access tokens (15 min) + opaque UUID refresh tokens in Redis
+- bcrypt password hashing direct (passlib 1.7.4 dropped — incompatible with bcrypt>=4.2 on Python 3.14)
+- Redis refresh token store: `src/adapters/redis_client.py` with async singleton + TTL
+- RBAC: Admin / Reviewer roles as JWT claims; HTTPBearer(auto_error=False) for custom 401
+- TokenPayload as TypedDict (resolved B02 open question)
+- Fixed `from jose import JWTClaimsError` — must be `from jose.exceptions import JWTClaimsError`
+- Fixed `sa.Enum(StrEnum)` — added `values_callable=_enum_values` to all 5 non-EmailState enums; `.name` (UPPERCASE) vs `.value` (lowercase) mismatch caused FK failures against Alembic-created PostgreSQL enums
+- `_enum_values()` helper in `src/models/base.py` shared by all models
+- Docker Compose db/redis: added `ports:` for local integration test access
+- Root conftest.py DB credentials aligned to Docker Compose (mailwise:password)
+- 231 total tests pass (42 new B02 + 189 existing); quality gates: ruff check, ruff format, mypy all clean

@@ -14,6 +14,9 @@ Usage:
 
   Run without DB:  pytest tests/models/test_email_state.py tests/models/test_models_import.py
   Run with DB:     pytest tests/models/ --run-integration
+
+Note: pytest_addoption, pytest_configure, and pytest_collection_modifyitems
+have been moved to tests/conftest.py for shared access across all test dirs.
 """
 
 import os
@@ -29,32 +32,6 @@ from sqlalchemy.pool import NullPool
 
 from alembic import command as alembic_command
 from src.core.config import get_settings
-
-
-def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addoption(
-        "--run-integration",
-        action="store_true",
-        default=False,
-        help="Run integration tests that require a real PostgreSQL database",
-    )
-
-
-def pytest_configure(config: pytest.Config) -> None:
-    config.addinivalue_line(
-        "markers",
-        "integration: mark test as requiring a real PostgreSQL database with migrations",
-    )
-
-
-def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
-    if not config.getoption("--run-integration"):
-        skip_integration = pytest.mark.skip(
-            reason="Requires PostgreSQL — run with --run-integration"
-        )
-        for item in items:
-            if "integration" in item.keywords:
-                item.add_marker(skip_integration)
 
 
 def _get_alembic_config() -> AlembicConfig:

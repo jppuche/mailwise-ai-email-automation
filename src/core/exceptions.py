@@ -22,3 +22,19 @@ class CategoryNotFoundError(Exception):
 
 class DuplicateEmailError(Exception):
     """Raised when attempting to ingest an email with a provider_message_id already present."""
+
+
+class AuthenticationError(Exception):
+    """Raised when authentication fails: invalid credentials, expired token, etc.
+
+    Callers: security.py (token verification), deps.py (bearer extraction).
+    HTTP mapping: 401 Unauthorized (mapped in exception_handlers at app level).
+    """
+
+
+class AuthorizationError(Exception):
+    """Raised when an authenticated user lacks permission for the requested action.
+
+    Callers: deps.py (require_admin, require_reviewer_or_admin).
+    HTTP mapping: 403 Forbidden.
+    """

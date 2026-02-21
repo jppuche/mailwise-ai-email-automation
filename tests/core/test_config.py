@@ -29,6 +29,7 @@ class TestSettingsDefaults:
         monkeypatch.setenv("DATABASE_URL", "postgresql+asyncpg://u:p@host/db")
         monkeypatch.setenv("DATABASE_URL_SYNC", "postgresql+psycopg2://u:p@host/db")
         monkeypatch.setenv("JWT_SECRET_KEY", "test-secret")
+        monkeypatch.delenv("REDIS_URL", raising=False)
         return Settings(_env_file=None)
 
     def test_redis_url_default(self, settings: Settings) -> None:

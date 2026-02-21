@@ -49,7 +49,6 @@ Compound learning: each session reads this file before working.
 
 ### Open questions — unresolved (carry to development blocks)
 
-- [inquisidor] B02: TypedDict vs dataclass for TokenPayload
 - [inquisidor] B07: asyncio.Lock vs Redis SET NX EX for poll lock (Redis correct for multi-worker)
 - [inquisidor] B08: `tuple[str, str]` vs named dataclass for `build_classify_prompt()` return
 - [inquisidor] B09: `frozenset[str]` vs `set[str]` for VIP senders
@@ -74,6 +73,7 @@ Compound learning: each session reads this file before working.
 - WARNING-01: `LLM_ALLOWED_MODELS` allowlist needed (B04/B14)
 - WARNING-02: `DRAFT_ORG_SYSTEM_PROMPT` max-length + startup warning (B11)
 - WARNING-03: `next(..., None)` for fallback category (B08)
+- WARNING-B02-01: Timing oracle in login — bcrypt not called for nonexistent users (B02)
 
 ### B00 decisions (now in code)
 
@@ -97,23 +97,50 @@ Compound learning: each session reads this file before working.
 
 ## 2026-02-20 -- Block 01 (consolidated) [backend-worker + Inquisidor]
 
-### B01 decisions (now in code)
+### B01 decisions (now in code, key patterns graduated to CLAUDE.md)
 
-- `StrEnum` for all str enums (ruff UP042). `alembic/script.py.mako` is correct filename.
-- `database.py` eager engine creation — importing without `.env` fails. `conftest.py` env defaults protect tests.
-- Settings needs `extra="ignore"` — Docker env vars (`POSTGRES_*`) cause ValidationError otherwise.
-- Alembic env.py: sync driver (psycopg2), NOT async. No Base import, `target_metadata = None`.
-- Alembic enums: `create_type=True` inline in `op.create_table` — NOT separate `.create()` calls. SQLAlchemy's `_on_table_create` ignores `create_type=False` from Alembic's DDL path.
-- `_make_email()` in tests: use `Email(...)` constructor, NOT `Email.__new__()` — ORM instrumentation requires `__init__`.
-- Test engine: `NullPool` mandatory. `migrated_db` fixture: upgrade-only (no teardown downgrade). PostgreSQL blocks DDL while sessions hold connections — even with NullPool, open sessions block DROP TABLE.
-- `sys.executable -m alembic` in subprocess calls — `alembic` not in PATH on Windows.
-- Integration tests: `--run-integration` flag, Alembic API (not subprocess) for in-process migrations.
-- Downgrade tests must restore schema (`upgrade head`) after assertions for subsequent test classes.
+- `StrEnum` for all str enums (ruff UP042). Settings needs `extra="ignore"` (Docker env vars).
+- Alembic env.py: sync psycopg2, no Base import, `target_metadata = None`.
+- `sys.executable -m alembic` on Windows — `alembic` not in PATH.
+- Integration tests: `--run-integration` flag, Alembic API for in-process migrations.
+- 132 tests: test_email_state (35u), test_models_import (34u), test_categories_seed (17i), test_migrations (17i).
 
-### B01 test coverage (132 tests total)
+---
 
-- `test_email_state.py`: 35 unit tests (state machine transitions, recovery paths, terminal state)
-- `test_models_import.py`: 34 unit tests (models, enums, TypedDicts, metadata, session factories)
-- `test_categories_seed.py`: 17 integration tests (seed slugs, counts, fallback flags)
-- `test_migrations.py`: 17 integration tests (tables, indices, enums, FKs, idempotency, roundtrip)
-- **Graduated to CLAUDE.md**: Alembic enum + NullPool + `migrated_db` patterns
+## 2026-02-21 -- Block 02 Auth & Users (consolidated) [Lorekeeper]
+
+### B02 decisions (now in code)
+
+- `bcrypt` used directly — passlib 1.7.4 incompatible with bcrypt>=4.2 on Python 3.14 (graduated to CLAUDE.md)
+- `from jose.exceptions import JWTClaimsError` — not re-exported from `jose` top level (graduated to CLAUDE.md)
+- `sa.Enum(StrEnum, values_callable=_enum_values)` on all 5 non-EmailState enums (graduated to CLAUDE.md)
+- `_enum_values()` helper in `src/models/base.py` shared by all models
+- `HTTPBearer(auto_error=False)` for custom 401 (FastAPI default returns 403)
+- TokenPayload as TypedDict (spec open question resolved)
+- `override_db` fixture: NullPool engine + `app.dependency_overrides[get_async_db]` — correct FastAPI integration test pattern
+- `admin_user`/`reviewer_user` fixtures: separate NullPool engines for DB inserts to avoid session entanglement
+- `migrated_db_module`: `Generator[None, None, None]` with explicit `yield` — mypy strict rejects `-> None` with `type: ignore[return]`
+- Test-only RBAC endpoints registered on `app` at module load; `# noqa: B008` on FastAPI `Depends` in default args
+- Source inspection pitfall: `"try" not in source` catches substrings in docstrings — avoid words containing "try"/"except" in docstrings of tested functions
+- Docker Compose db/redis: `ports:` must be exposed for local integration tests
+- Root conftest.py DB credentials: must match Docker Compose (mailwise:password, not test:test)
+
+### B02 open questions resolved
+
+- [inquisidor] B02: TypedDict vs dataclass for TokenPayload → **TypedDict** (chosen)
+
+### B02 test coverage (42 new tests, 231 total)
+
+- `tests/unit/test_security.py`: 13 unit tests (hash, verify, access token, claims, refresh token, TokenPayload)
+- `tests/unit/test_auth_schemas.py`: 19 unit tests (LoginRequest, TokenResponse, RefreshRequest, UserResponse)
+- `tests/integration/test_auth_endpoints.py`: 17 tests (login, refresh, logout, me, RBAC)
+- `tests/integration/test_redis_client.py`: 7 tests (lifecycle, error handling, TTL)
+
+### B02 Sentinel security review [sentinel] [security]
+
+- PASS — 0 CRITICAL, 1 WARNING, 4 SUGGESTIONS. Full report: `docs/reviews/block-02-auth-security-review.md`
+- WARNING-B02-01: Timing oracle in login (bcrypt short-circuit for nonexistent user). Mitigated by single-tenant + future rate limiting.
+- SUGGESTION-B02-01: password max_length=128 on LoginRequest schema (bcrypt 72-byte truncation + DoS)
+- SUGGESTION-B02-02: jwt_algorithm should be Literal["HS256","HS384","HS512"] not free-form str
+- SUGGESTION-B02-03: No refresh token family tracking (acceptable single-tenant)
+- SUGGESTION-B02-04: cors_origins has default — contradicts B19 "no default" (defer to B19)

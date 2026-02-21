@@ -1,6 +1,6 @@
 # Project Status — mailwise
 
-**Last updated:** 2026-02-20
+**Last updated:** 2026-02-21
 
 ## Current phase
 
@@ -17,14 +17,15 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 02: Auth & Users (next)
+- [ ] Block 03: Gmail Adapter (next)
 
 ## Pending
 
-- [ ] Blocks 03-19
+- [ ] Blocks 04-19
 
 ## Recently Completed
 
+- [x] Block 02: Auth & Users (JWT+bcrypt, Redis refresh tokens, RBAC, 231 tests)
 - [x] Block 01: Database Models (9 models, 132 tests, Sentinel pass)
 - [x] Block 00: Scaffolding (Docker 4/6 healthy)
 

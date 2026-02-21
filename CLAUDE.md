@@ -124,3 +124,7 @@ Configured in .claude/settings.local.json (do not commit).
 - Alembic enums: use `create_type=True` inline in `op.create_table`, NOT separate `.create()` calls — SQLAlchemy's `_on_table_create` ignores `create_type=False` from Alembic's DDL path
 - Alembic env.py: sync driver (psycopg2), no Base import, `target_metadata=None` for hand-written migrations
 - Test DB fixtures: NullPool mandatory, `migrated_db` upgrade-only (no teardown downgrade) — PostgreSQL blocks DDL while sessions hold connections
+- passlib 1.7.4 unmaintained: incompatible with bcrypt>=4.2 on Python 3.14 (detect_wrap_bug failure). Use `bcrypt` directly for password hashing
+- python-jose: `JWTClaimsError` NOT exported from top-level `jose` — always import `from jose.exceptions import JWTClaimsError`
+- SQLAlchemy `sa.Enum(StrEnum)`: uses `.name` (UPPERCASE) not `.value` (lowercase) — add `values_callable=lambda e: [m.value for m in e]` on all StrEnum columns to match Alembic-created PostgreSQL enum values
+- Redis async singleton in tests: function-scoped pytest-asyncio loops don't share singletons — reset `_redis_client = None` between test functions via autouse fixture

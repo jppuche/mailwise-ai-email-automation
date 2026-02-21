@@ -1,9 +1,20 @@
 """SQLAlchemy 2.0 declarative base and shared mixins."""
 
 import datetime
+from enum import Enum
 
 import sqlalchemy as sa
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+def _enum_values(enum_cls: type[Enum]) -> list[str]:
+    """Extract enum .value strings for sa.Enum(values_callable=...).
+
+    StrEnum names are UPPERCASE but values are lowercase.
+    SQLAlchemy defaults to names; this forces values to match
+    the PostgreSQL enum type created by Alembic migrations.
+    """
+    return [m.value for m in enum_cls]
 
 
 class Base(DeclarativeBase):

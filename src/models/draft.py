@@ -17,7 +17,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.models.base import Base, TimestampMixin
+from src.models.base import Base, TimestampMixin, _enum_values
 
 
 class DraftStatus(StrEnum):
@@ -46,7 +46,12 @@ class Draft(Base, TimestampMixin):
     )
     content: Mapped[str] = mapped_column(sa.Text, nullable=False)
     status: Mapped[DraftStatus] = mapped_column(
-        sa.Enum(DraftStatus, name="draftstatus", create_type=True),
+        sa.Enum(
+            DraftStatus,
+            name="draftstatus",
+            create_type=True,
+            values_callable=_enum_values,
+        ),
         nullable=False,
         default=DraftStatus.PENDING,
     )

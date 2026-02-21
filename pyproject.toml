@@ -19,7 +19,7 @@ dependencies = [
     "redis>=5.0",
     "structlog>=24.1",
     "python-jose[cryptography]>=3.3",
-    "passlib[bcrypt]>=1.7",
+    "bcrypt>=4.0",
     "litellm>=1.40",
     "google-api-python-client>=2.130",
     "google-auth-oauthlib>=1.2",
@@ -64,6 +64,7 @@ module = [
     "litellm.*",
     "slack_sdk.*",
     "apscheduler.*",
+    "jose.*",
 ]
 ignore_missing_imports = true
 

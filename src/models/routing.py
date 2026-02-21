@@ -16,7 +16,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.models.base import Base, TimestampMixin
+from src.models.base import Base, TimestampMixin, _enum_values
 
 
 class RoutingConditions(TypedDict):
@@ -91,7 +91,12 @@ class RoutingAction(Base, TimestampMixin):
     destination: Mapped[str] = mapped_column(sa.String(255), nullable=False)
     priority: Mapped[int] = mapped_column(sa.Integer, nullable=False)
     status: Mapped[RoutingActionStatus] = mapped_column(
-        sa.Enum(RoutingActionStatus, name="routingactionstatus", create_type=True),
+        sa.Enum(
+            RoutingActionStatus,
+            name="routingactionstatus",
+            create_type=True,
+            values_callable=_enum_values,
+        ),
         nullable=False,
         default=RoutingActionStatus.PENDING,
     )

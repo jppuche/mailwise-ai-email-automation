@@ -18,7 +18,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.models.base import Base, TimestampMixin
+from src.models.base import Base, TimestampMixin, _enum_values
 
 
 class ClassificationConfidence(StrEnum):
@@ -65,7 +65,12 @@ class ClassificationResult(Base, TimestampMixin):
         nullable=False,
     )
     confidence: Mapped[ClassificationConfidence] = mapped_column(
-        sa.Enum(ClassificationConfidence, name="classificationconfidence", create_type=True),
+        sa.Enum(
+            ClassificationConfidence,
+            name="classificationconfidence",
+            create_type=True,
+            values_callable=_enum_values,
+        ),
         nullable=False,
     )
     raw_llm_output: Mapped[dict] = mapped_column(JSONB, nullable=False)  # type: ignore[type-arg]

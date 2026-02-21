@@ -14,7 +14,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.models.base import Base, TimestampMixin
+from src.models.base import Base, TimestampMixin, _enum_values
 
 
 class UserRole(StrEnum):
@@ -42,7 +42,12 @@ class User(Base, TimestampMixin):
     username: Mapped[str] = mapped_column(sa.String(100), nullable=False, unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(sa.String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(
-        sa.Enum(UserRole, name="userrole", create_type=True),
+        sa.Enum(
+            UserRole,
+            name="userrole",
+            create_type=True,
+            values_callable=_enum_values,
+        ),
         nullable=False,
         default=UserRole.REVIEWER,
     )
