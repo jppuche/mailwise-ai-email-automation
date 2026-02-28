@@ -1,6 +1,6 @@
 # Project Status — mailwise
 
-**Last updated:** 2026-02-21
+**Last updated:** 2026-02-28
 
 ## Current phase
 
@@ -17,11 +17,12 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 06: HubSpot CRM Adapter (next)
-- [ ] Blocks 07-19 (pending)
+- [ ] Block 07: Ingestion Pipeline (next)
+- [ ] Blocks 08-19 (pending)
 
 ## Recently Completed
 
+- [x] Block 06: HubSpot CRM Adapter (HubSpotAdapter, 7 methods, 170 tests, 637 total)
 - [x] Block 05: Slack Channel Adapter (SlackAdapter, Block Kit formatter, 103 tests, 467 total)
 - [x] Block 04: LLM Adapter (LiteLLMAdapter, 7-shape parser, 106 tests, 364 total)
 - [x] Block 03: Gmail Adapter (ABC + GmailAdapter, 85 tests, 258 total)

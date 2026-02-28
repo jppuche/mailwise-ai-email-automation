@@ -70,6 +70,11 @@ class Settings(BaseSettings):
 
     # HubSpot
     hubspot_access_token: str = Field(default="")
+    hubspot_rate_limit_per_10s: int = Field(default=100)
+    hubspot_activity_snippet_length: int = Field(default=200)
+    hubspot_auto_create_contacts: bool = Field(default=False)
+    hubspot_default_lead_status: str = Field(default="NEW")
+    hubspot_api_timeout_seconds: int = Field(default=15)
 
 
 def get_settings() -> Settings:

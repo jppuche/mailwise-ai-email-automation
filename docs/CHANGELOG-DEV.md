@@ -116,6 +116,21 @@
 - 85 new tests: 18 schema, 23 parsing, 15 contract (MockEmailAdapter), 29 adapter (mocked Google API)
 - 258 total tests passing; quality gates: ruff 0, mypy 0, D1 no dict[str, Any] at boundaries
 
+## 2026-02-28 -- Block 06: HubSpot CRM Adapter
+
+- CRMAdapter ABC with 7 async abstract methods and contract docstrings (4-question format)
+- HubSpotAdapter concrete implementation: all SDK calls via `asyncio.to_thread()` (sync SDK)
+- Exception hierarchy: CRMAdapterError base + 6 subclasses (Auth, RateLimit, Connection, DuplicateContact, ContactNotFound, FieldNotFound) with `original_error`
+- Typed boundary schemas: Contact, CreateContactData, ActivityData, CreateLeadData, CRMCredentials, ConnectionStatus, ConnectionTestResult (Pydantic)
+- `ActivityId`/`LeadId` as NewType (semantic distinction from bare str)
+- try-except D7: `_raise_from_hubspot_exc()` classifies `ApiException` by HTTP status (401/404/409/429/400+PROPERTY)
+- try-except D8: precondition validation via conditionals, SDK-to-Pydantic mapping via conditionals
+- Sec 6.4: `update_field` silences `FieldNotFoundError` (log + skip, no fail)
+- Sec 6.5: `_hash_email()` for PII-safe logging, no snippet/subject/sender data in logs
+- Settings: 5 new HubSpot defaults in `src/core/config.py` (rate_limit, snippet_length, auto_create, lead_status, timeout)
+- 170 new tests: 46 schema, 82 adapter (mocked SDK), 42 contract
+- 637 total tests passing; quality gates: mypy 0 errors, ruff 0 violations, pytest 637/637
+
 ## 2026-02-21 -- Block 05: Slack Channel Adapter
 
 - ChannelAdapter ABC with 4 async methods (connect, send_notification, test_connection, get_available_destinations)
