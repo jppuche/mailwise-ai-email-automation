@@ -24,7 +24,6 @@ Compound learning: each session reads this file before working.
 
 ### Standing architecture decisions (spec-level, not yet in code)
 
-- [B06] `ActivityId`/`LeadId` as NewType. Duplicate contacts: most recent by `createdate`. Snippet truncated by calling SERVICE not adapter.
 - [B07] `IngestionResult` frozen dataclass. Lock key per account_id. Two independent commits per email (FETCHED then SANITIZED).
 - [B08] ClassificationResult naming collision: alias `AdapterClassificationResult`. Heuristics NEVER override LLM — only lower confidence. PromptBuilder/HeuristicClassifier: 0 try/except (enforced by grep in exit conditions).
 - [B09] `dispatch_id` = SHA-256[:32] of `"{email_id}:{rule_id}:{channel}:{destination}"`. Unrouted → ROUTED (not ROUTING_FAILED). Each RoutingAction has own `db.commit()`.
@@ -78,7 +77,6 @@ Compound learning: each session reads this file before working.
 
 ## 2026-02-21 -- Block 03 Gmail Adapter [backend-worker]
 
-- `_service: Any | None` — untyped SDK stays private; `assert self._service is not None` after `_ensure_connected()` for mypy
 - `except (KeyError, ValueError, TypeError)` for per-message parse isolation (not bare Exception)
 - google modules in mypy `ignore_missing_imports` — no `type: ignore[import-untyped]` needed on imports
 - `Credentials()` constructor needs `# type: ignore[no-untyped-call]`
@@ -108,24 +106,10 @@ Compound learning: each session reads this file before working.
 
 ---
 
-## 2026-02-28 -- Block 06 CRM contract tests [backend-worker]
+## 2026-02-28 -- Block 06 HubSpot CRM Adapter (consolidated) [Lorekeeper]
 
-- Contract test file: `tests/contract/test_crm_adapter_contract.py` — 42 tests, 42 pass
-- mypy: `update_field()` returns `None` — assign-to-variable triggers `func-returns-value`; fix is plain `await` statement with comment
-- Ruff I001: import sort order within `from src.*` blocks — `CRMCredentials` sorts before `Contact`; auto-fixed via `ruff check --fix`
-- `ActivityId`/`LeadId` are `NewType("...", str)` — isinstance check is `isinstance(result, str)` (not a class), test verifies with `assert isinstance(result, str)`
-- `connected_adapter` fixture bypasses `connect()` by setting `_connected = True` directly — avoids coupling contract tests to credentials validation logic
-- Exception hierarchy: 6 subclasses + `CRMAdapterError` base. `CRMRateLimitError` is the only one with extra constructor arg (`retry_after_seconds`)
-
----
-
-## 2026-02-28 -- Block 06 HubSpot adapter unit tests [backend-worker]
-
-- `tests/unit/test_hubspot_adapter.py` — 82 tests, 82 pass
-- `asyncio.to_thread` monkeypatch pattern: patch with `async def _sync_to_thread(func, /, *args, **kwargs): return func(*args, **kwargs)` makes all sync SDK mocks callable inline
-- `get_page` called in BOTH `connect()` AND `test_connection()` — must connect adapter first, THEN set `side_effect` for `test_connection` failure tests; setting side_effect before `_connected_adapter()` breaks the connect call
-- `NewType` in Python 3.12+ creates a class — `ActivityId.__supertype__` raises `attr-defined` in mypy; use `isinstance(result, str)` for runtime newtype checks
-- `update_field() -> None` signature: `result = await adapter.update_field(...)` triggers mypy `func-returns-value`; use bare `await` statement instead
-- Unused `type: ignore[assignment]` on Pydantic model attribute mutation (Python 3.14 + Pydantic v2 — mypy no longer flags this); remove the comment
-- Ruff I001 auto-fixed: imports reordered (alphabetical within group — `ContactNotFoundError` before `CRMAuthError`)
-- 82 new tests, 637 total passing (34 skipped = integration)
+- `get_page` called in BOTH `connect()` AND `test_connection()` — set `side_effect` AFTER `_connected_adapter()`, not before
+- `NewType` in Python 3.12+: `isinstance(result, str)` for runtime checks, NOT `ActivityId.__supertype__` (mypy `attr-defined`)
+- `connected_adapter` fixture bypasses `connect()` by setting `_connected = True` directly — decouples contract tests from credentials
+- Pydantic v2 + Python 3.14: `type: ignore[assignment]` on model attribute mutation no longer needed — mypy no longer flags it
+- 170 new tests (46 schema, 82 adapter, 42 contract), 637 total

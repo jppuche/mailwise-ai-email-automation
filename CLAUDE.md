@@ -129,3 +129,6 @@ Configured in .claude/settings.local.json (do not commit).
 - SQLAlchemy `sa.Enum(StrEnum)`: uses `.name` (UPPERCASE) not `.value` (lowercase) — add `values_callable=lambda e: [m.value for m in e]` on all StrEnum columns to match Alembic-created PostgreSQL enum values
 - Redis async singleton in tests: function-scoped pytest-asyncio loops don't share singletons — reset `_redis_client = None` between test functions via autouse fixture
 - litellm exceptions: use `import litellm.exceptions as litellm_exc` — `litellm.RateLimitError` direct access triggers mypy `attr-defined` even with `ignore_missing_imports = true`; exception is named `Timeout` (not `TimeoutError`)
+- Adapter `_ensure_connected()` + `assert self._client is not None` after call — consistent mypy narrowing pattern across all adapters (B03/B05/B06)
+- Sync SDK wrapping: `asyncio.to_thread(sdk_method, **kwargs)` for sync-only SDKs (hubspot-api-client); test with monkeypatch `async def _sync_to_thread(func, /, *args, **kwargs): return func(*args, **kwargs)`
+- `-> None` methods: bare `await adapter.method()`, never `result = await ...` — mypy `func-returns-value` error on assignment
