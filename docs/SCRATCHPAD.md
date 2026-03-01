@@ -43,7 +43,7 @@ Compound learning: each session reads this file before working.
 - [inquisidor] B07: asyncio.Lock vs Redis SET NX EX for poll lock (Redis correct for multi-worker)
 - [RESOLVED] B08: `tuple[str, str]` for `build_classify_prompt()` return (simple, spec says tuple)
 - [RESOLVED] B09: `frozenset[str]` for VIP senders (immutable after construction)
-- [inquisidor] B10: `dict[str, str]` vs `list[FieldUpdate]` for field_updates
+- [RESOLVED] B10: `dict[str, str]` for field_updates (documented exception to D1 no-dict rule)
 - [inquisidor] B11: `list[str]` vs `list[InteractionRecord]` for recent_interactions
 - [inquisidor] B12: conditional `.delay()` in `route_task` vs `chord`/`group` — race conditions?
 - [inquisidor] B13: `PaginatedResponse[T]` Generic BaseModel + Pydantic v2 + `model_rebuild()`?
@@ -111,3 +111,28 @@ Compound learning: each session reads this file before working.
 - `transition_to` side_effect on mock mutates `email.state` → real assertion after routing
 - 5 parallel test agents: 35 + 44 + 26 + 10 + 20 = 135 new tests; all grep checks passed first try
 - 1000 total tests, 0 regressions, mypy 0, ruff 0
+
+---
+
+## 2026-02-28 -- Block 10 CRM Sync Service (Agent B) [backend-worker]
+
+### Implementation notes
+
+- `_compute_overall_success(operations)` returns False for empty list AND for all-skipped; but contact_id=None short-circuit added in sync() to handle "lookup returned None, no auto-create" case correctly
+- `overall_success = contact_id is not None and _compute_overall_success(operations)` — necessary because a successful lookup returning None (contact not found) should yield overall_success=False
+- `_do_contact_create` uses nested try/except: outer catches CRMAuth/RateLimit (re-raise), DuplicateContactError (re-lookup), generic CRMAdapterError. Order matters — more specific before generic.
+- `CRMSyncRecord` constructor: explicit `id=uuid.uuid4()` (INSERT-time only default pattern from B07)
+- `synced_at=datetime.now(UTC)` provided explicitly (server_default=func.now() only applies at DB level)
+- Empty `if TYPE_CHECKING: pass` block removed — ruff flags as useless
+- `CRMAdapterError` not imported in test file (only `CRMConnectionError` used as concrete subclass) — avoids F401
+- `_make_db_no_record()` uses `return_value` (same mock for all calls) — fine because after idempotency check, no more `db.execute` calls (persist uses `db.add` + `db.commit`)
+- `_make_db_with_record()` same pattern — works for FAILED record test because only one execute call (idempotency check)
+- `update_field` returns None — bare `await self._crm_adapter.update_field(...)`, never `result = await ...`
+
+### What worked well
+
+- Handoff doc had exact signatures from actual code — no codebase exploration needed
+- Routing service served as perfect pattern source for per-operation isolation + D13 commits
+- 3 parallel agents: schemas (28) + service (19) + task (10) = 57 new tests
+- Only 2 ruff B904 fixes needed post-agent (`raise ... from exc`)
+- 1057 total tests, 0 regressions, mypy 0, ruff 0

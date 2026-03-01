@@ -90,6 +90,10 @@ class Settings(BaseSettings):
     hubspot_default_lead_status: str = Field(default="NEW")
     hubspot_api_timeout_seconds: int = Field(default=15)
 
+    # CRM Sync (Cat 8: configurable defaults)
+    crm_sync_retry_max: int = Field(default=3)
+    crm_sync_backoff_base_seconds: int = Field(default=60)
+
 
 def get_settings() -> Settings:
     return Settings()
