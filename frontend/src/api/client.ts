@@ -15,25 +15,30 @@ export class ApiError extends Error {
 }
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: "/api",
-  withCredentials: true, // envia la cookie httpOnly de refresh en cross-origin dev
+  baseURL: "/api/v1",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Referencia a getAccessToken — se setea desde AuthProvider para evitar circular dep
+// Referencia a getAccessToken y getRefreshToken — se setean desde AuthProvider para evitar circular dep
 let _getAccessToken: (() => string | null) | null = null;
+let _getRefreshToken: (() => string | null) | null = null;
+let _onTokenRefreshed: ((accessToken: string, refreshToken: string) => void) | null = null;
 let _redirectToLogin: (() => void) | null = null;
 let _isRefreshing = false;
 let _refreshQueue: Array<(token: string | null) => void> = [];
 
-export function configureClient(
-  getToken: () => string | null,
-  redirectFn: () => void,
-): void {
-  _getAccessToken = getToken;
-  _redirectToLogin = redirectFn;
+export function configureClient(opts: {
+  getAccessToken: () => string | null;
+  getRefreshToken: () => string | null;
+  onTokenRefreshed: (accessToken: string, refreshToken: string) => void;
+  redirectToLogin: () => void;
+}): void {
+  _getAccessToken = opts.getAccessToken;
+  _getRefreshToken = opts.getRefreshToken;
+  _onTokenRefreshed = opts.onTokenRefreshed;
+  _redirectToLogin = opts.redirectToLogin;
 }
 
 // Request interceptor: inyectar Bearer token
@@ -54,6 +59,11 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // No intentar refresh en el propio endpoint de refresh (evitar loop infinito)
+    if (originalRequest.url === "/auth/refresh") {
+      return Promise.reject(error);
+    }
+
     if (_isRefreshing) {
       // Cola: esperar al refresh en curso
       return new Promise((resolve, reject) => {
@@ -70,12 +80,21 @@ apiClient.interceptors.response.use(
 
     _isRefreshing = true;
     try {
-      const { data } = await apiClient.post<{ access_token: string }>("/auth/refresh");
-      const newToken = data.access_token;
-      _refreshQueue.forEach((cb) => cb(newToken));
+      const refreshToken = _getRefreshToken?.();
+      if (!refreshToken) {
+        throw new Error("No refresh token available");
+      }
+      const { data } = await apiClient.post<{ access_token: string; refresh_token: string; token_type: string }>(
+        "/auth/refresh",
+        { refresh_token: refreshToken },
+      );
+      const newAccessToken = data.access_token;
+      const newRefreshToken = data.refresh_token;
+      _onTokenRefreshed?.(newAccessToken, newRefreshToken);
+      _refreshQueue.forEach((cb) => cb(newAccessToken));
       _refreshQueue = [];
       if (originalRequest.headers) {
-        originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
+        originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
       }
       return apiClient(originalRequest);
     } catch (refreshError: unknown) {

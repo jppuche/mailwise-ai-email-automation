@@ -39,7 +39,7 @@ export default function Header() {
         </button>
 
         <div className="header__user">
-          <span>{user?.email}</span>
+          <span>{user?.username}</span>
         </div>
       </div>
     </header>

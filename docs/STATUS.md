@@ -12,7 +12,7 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 15: Frontend SPA — Auth & Email List (next)
+- [ ] Block 15: Frontend SPA — Auth & Email List (auth + shell complete, email list pending)
 - [ ] Blocks 16-19 (pending)
 
 ## Recently Completed

@@ -4,8 +4,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import ForbiddenPage from "@/pages/ForbiddenPage";
 
 // RouteConfig: tipo local — config de ProtectedRoute sin equivalente en backend
+// Roles son lowercase — match con UserRole del backend ("admin" | "reviewer")
 interface ProtectedRouteProps {
-  requiredRole?: "Admin" | "Reviewer";
+  requiredRole?: "admin" | "reviewer";
 }
 
 export default function ProtectedRoute({ requiredRole }: ProtectedRouteProps) {
@@ -25,11 +26,11 @@ export default function ProtectedRoute({ requiredRole }: ProtectedRouteProps) {
     return <Outlet />;
   }
 
-  // Admin puede acceder a rutas de Admin y Reviewer
-  // Reviewer solo puede acceder a rutas de Reviewer
+  // admin puede acceder a rutas de admin y reviewer
+  // reviewer solo puede acceder a rutas de reviewer
   const hasRole =
-    user?.role === "Admin" ||
-    (requiredRole === "Reviewer" && user?.role === "Reviewer");
+    user?.role === "admin" ||
+    (requiredRole === "reviewer" && user?.role === "reviewer");
 
   if (!hasRole) {
     return <ForbiddenPage />;

@@ -1,22 +1,28 @@
 // src/api/auth.ts
-// Funciones tipadas de auth — tipos desde schema generado (D4: no duplicacion manual)
+// Funciones tipadas de auth — tipos desde schema generado (tighten-types D4: no duplicacion manual)
 import apiClient from "./client";
 import type { components } from "@/types/generated/api";
 
 type LoginRequest = components["schemas"]["LoginRequest"];
-type LoginResponse = components["schemas"]["LoginResponse"];
-type RefreshResponse = components["schemas"]["RefreshResponse"];
+type TokenResponse = components["schemas"]["TokenResponse"];
+type RefreshRequest = components["schemas"]["RefreshRequest"];
+type UserResponse = components["schemas"]["UserResponse"];
 
-export async function loginRequest(body: LoginRequest): Promise<LoginResponse> {
-  const { data } = await apiClient.post<LoginResponse>("/auth/login", body);
+export async function loginRequest(body: LoginRequest): Promise<TokenResponse> {
+  const { data } = await apiClient.post<TokenResponse>("/auth/login", body);
   return data;
 }
 
-export async function refreshRequest(): Promise<RefreshResponse> {
-  const { data } = await apiClient.post<RefreshResponse>("/auth/refresh");
+export async function refreshRequest(body: RefreshRequest): Promise<TokenResponse> {
+  const { data } = await apiClient.post<TokenResponse>("/auth/refresh", body);
   return data;
 }
 
-export async function logoutRequest(): Promise<void> {
-  await apiClient.post("/auth/logout");
+export async function logoutRequest(refreshToken: string): Promise<void> {
+  await apiClient.post("/auth/logout", { refresh_token: refreshToken });
+}
+
+export async function getMeRequest(): Promise<UserResponse> {
+  const { data } = await apiClient.get<UserResponse>("/auth/me");
+  return data;
 }

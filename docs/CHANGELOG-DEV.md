@@ -247,6 +247,21 @@
 - 172 new tests (80 result types + 29 chain + 20 partial failure + 12 scheduler lock + 31 poll job)
 - 1367 total tests, 0 regressions, mypy 0 errors, ruff 0 violations
 
+## 2026-03-02 -- Block 15: Frontend SPA — Auth & Email List (partial: auth + shell)
+
+- App shell: Sidebar (nav + role-based links) + Header (page title + theme toggle + username) + content area
+- Auth flow: LoginPage → loginRequest → getMeRequest → AuthContext state (tokens in useRef, never localStorage)
+- Token refresh: JWT exp decode, schedule 30s before expiry, 401 interceptor queues parallel requests
+- configureClient pattern: AuthContext injects token getters into API client (no circular dependency)
+- ProtectedRoute: role-based guards (admin/reviewer lowercase), ForbiddenPage for unauthorized
+- ThemeContext: CSS custom properties via data-theme attribute, localStorage persistence, system preference detection
+- Router: lazy-loaded admin pages, public /login, protected / with role checks
+- Generated API types: LoginRequest (username), TokenResponse, RefreshRequest, UserResponse — all from types/generated/api.ts
+- Testing: Vitest + @testing-library/react + jsdom, 27 tests (ThemeContext, AuthContext, ProtectedRoute, client interceptors)
+- Quality gates: TypeScript 0 errors, ESLint 0 errors, Vite build 108KB gzip, 27/27 tests pass
+- Architecture: no tokens in storage (useRef only), no manual API types (tighten-types D4), no hardcoded colors (CSS vars)
+- 9 handoff deltas from block-15-context.md applied (email→username, no cookies, lowercase roles, /api/v1/ prefix)
+
 ## 2026-03-02 -- Block 14: Analytics & Admin Endpoints
 
 - 4 new routers: categories (13 endpoints), integrations (8 endpoints), analytics (5 endpoints), logs (1 endpoint) — 26 total

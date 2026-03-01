@@ -32,7 +32,7 @@ export default function Sidebar() {
     navigate("/login", { replace: true });
   };
 
-  const initials = user?.email.charAt(0).toUpperCase() ?? "?";
+  const initials = user?.username.charAt(0).toUpperCase() ?? "?";
 
   return (
     <aside className="sidebar">
@@ -56,7 +56,7 @@ export default function Sidebar() {
           </NavLink>
         ))}
 
-        {user?.role === "Admin" && (
+        {user?.role === "admin" && (
           <>
             <span className="sidebar__nav-label" style={{ marginTop: "0.5rem" }}>Admin</span>
             {ADMIN_NAV_ITEMS.map((item) => (
@@ -79,7 +79,7 @@ export default function Sidebar() {
         <div className="sidebar__user">
           <div className="sidebar__user-avatar" aria-hidden="true">{initials}</div>
           <div className="sidebar__user-info">
-            <div className="sidebar__user-email" title={user?.email ?? ""}>{user?.email}</div>
+            <div className="sidebar__user-email" title={user?.username ?? ""}>{user?.username}</div>
             <div className="sidebar__user-role">{user?.role}</div>
           </div>
         </div>

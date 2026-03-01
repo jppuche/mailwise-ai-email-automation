@@ -53,7 +53,7 @@ export const router = createBrowserRouter([
   },
   {
     // Rutas admin-only
-    element: <ProtectedRoute requiredRole="Admin" />,
+    element: <ProtectedRoute requiredRole="admin" />,
     children: [
       {
         element: <AppShell />,

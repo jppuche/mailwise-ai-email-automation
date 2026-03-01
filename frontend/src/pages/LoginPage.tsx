@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function LoginPage() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,10 +24,10 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      await login(username, password);
       navigate("/", { replace: true });
     } catch {
-      setError("Invalid email or password. Please try again.");
+      setError("Invalid username or password. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -49,19 +49,19 @@ export default function LoginPage() {
 
         <form onSubmit={(e) => { void handleSubmit(e); }} noValidate>
           <div className="form-group">
-            <label className="form-label" htmlFor="email">
-              Email address
+            <label className="form-label" htmlFor="username">
+              Username
             </label>
             <input
-              id="email"
-              type="email"
+              id="username"
+              type="text"
               className="form-input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
               required
               disabled={isLoading}
-              placeholder="you@example.com"
+              placeholder="your-username"
             />
           </div>
 
@@ -85,7 +85,7 @@ export default function LoginPage() {
           <button
             type="submit"
             className="btn btn--primary"
-            disabled={isLoading || email.trim() === "" || password.trim() === ""}
+            disabled={isLoading || username.trim() === "" || password.trim() === ""}
           >
             {isLoading ? "Signing in..." : "Sign in"}
           </button>
