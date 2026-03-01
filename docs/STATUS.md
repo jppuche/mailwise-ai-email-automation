@@ -1,6 +1,6 @@
 # Project Status — mailwise
 
-**Last updated:** 2026-02-28
+**Last updated:** 2026-03-01
 
 ## Current phase
 
@@ -12,11 +12,13 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 10: CRM Sync Service (next)
-- [ ] Blocks 11-19 (pending)
+- [ ] Block 12: Pipeline & Scheduler (next)
+- [ ] Blocks 13-19 (pending)
 
 ## Recently Completed
 
+- [x] Block 11: Draft Generation (DraftContextBuilder, DraftGenerationService, Gmail push, 138 tests, 1195 total)
+- [x] Block 10: CRM Sync Service (CRMSyncService, 6-op chain, idempotent, 57 tests, 1057 total)
 - [x] Block 09: Routing Service (RoutingService, RuleEngine, 6 operators, idempotent dispatch, 135 tests, 1000 total)
 - [x] Block 08: Classification Service (PromptBuilder, HeuristicClassifier, 5-layer defense, 175 tests, 865 total)
 - [x] Block 07: Ingestion Pipeline (IngestionService, dedup, thread-aware, 53 tests, 690 total)

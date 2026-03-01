@@ -94,6 +94,14 @@ class Settings(BaseSettings):
     crm_sync_retry_max: int = Field(default=3)
     crm_sync_backoff_base_seconds: int = Field(default=60)
 
+    # Draft Generation (Cat 8: configurable defaults)
+    draft_push_to_gmail: bool = Field(default=False)
+    draft_org_system_prompt: str = Field(default="")
+    draft_org_tone: str = Field(default="professional")
+    draft_org_signature: str = Field(default="")
+    draft_org_prohibited_language: str = Field(default="")  # comma-separated
+    draft_generation_retry_max: int = Field(default=2)
+
 
 def get_settings() -> Settings:
     return Settings()

@@ -41,7 +41,7 @@ Compound learning: each session reads this file before working.
 ### Open questions — unresolved (carry to development blocks)
 
 - [inquisidor] B07: asyncio.Lock vs Redis SET NX EX for poll lock (Redis correct for multi-worker)
-- [inquisidor] B11: `list[str]` vs `list[InteractionRecord]` for recent_interactions
+- [RESOLVED] B11: `list[str]` for recent_interactions (summaries, not objects — schema uses str)
 - [inquisidor] B12: conditional `.delay()` in `route_task` vs `chord`/`group` — race conditions?
 - [inquisidor] B13: `PaginatedResponse[T]` Generic BaseModel + Pydantic v2 + `model_rebuild()`?
 - [inquisidor] B16: `confidence` in `ReviewQueueItem` — `'high' | 'low'` or float 0.0–1.0?
@@ -109,3 +109,25 @@ Compound learning: each session reads this file before working.
 - `_make_db_no_record()` uses `return_value` (not `side_effect`) — only one `db.execute` call (idempotency check)
 - [GRADUATED] `ruff B904: raise ... from exc`, `server_default` vs explicit datetime → CLAUDE.md Learned Patterns
 - 3 parallel agents: 57 new tests (28+19+10), 1057 total, 0 regressions
+
+---
+
+## 2026-03-01 -- Block 11 commit + Block 12 handoff [Lorekeeper]
+
+- B11 committed with 138 tests, 1195 total, 0 regressions
+- B12 handoff doc created from spec
+
+---
+
+## 2026-02-28 -- Block 11 Draft Generation Service [Lorekeeper]
+
+### Implementation notes
+
+- Schema types: `received_at: str` (ISO 8601) and `confidence: str` ("high"/"low") — agents used datetime/float, required test fixes
+- `email_adapter.create_draft()` is sync → wrap with `asyncio.to_thread()` in async service
+- D13 enforced: draft committed before Gmail push. Gmail push failure → DRAFT_GENERATED (not DRAFT_FAILED)
+- `LLMRateLimitError` is the ONLY exception re-raised from service → Celery task retries
+- Task deferred imports: sys.modules injection (B10 pattern), real Pydantic classes for schema construction
+- `body_plain` read once in task, truncated to `body_snippet`, never logged (privacy Sec 6.5)
+- 4 parallel agents: 39 (schemas) + 57 (context builder) + 15 (service) + 14 (task) = 125 → 138 B11 tests
+- 1195 total tests, 0 regressions, mypy 0, ruff 0

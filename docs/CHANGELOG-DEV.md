@@ -173,6 +173,34 @@
 - 53 new tests: 20 schema, 27 service, 6 task. 690 total, 0 regressions
 - Quality gates: mypy 0 errors, ruff 0 violations, pytest 690/690
 
+## 2026-03-01 -- Block 11: Draft Generation Service
+
+- DraftContextBuilder: pure-local context assembly, zero try/except (D8), structured LLM prompt with 6 sections
+- DraftGenerationService: LLM call → Draft persist (D13) → optional Gmail push → state transition
+- DraftContextBuilder.build() never raises — missing data produces notes, not errors
+- Gmail push failure → DRAFT_GENERATED (NOT DRAFT_FAILED): draft already persisted (D13)
+- LLMRateLimitError is the only exception re-raised from service → Celery task retries
+- email_adapter.create_draft() is sync → wrapped with asyncio.to_thread() in async service
+- Celery task: sync→async bridge via asyncio.run(), deferred imports, sys.modules test pattern
+- Service schemas: 8 Pydantic models (EmailContent, ClassificationContext, CRMContextData, OrgContext, DraftContext, DraftRequest, DraftResult, DraftGenerationConfig)
+- Settings: 6 new draft_* Cat 8 configurable defaults (push_to_gmail, org_system_prompt, org_tone, org_signature, org_prohibited_language, generation_retry_max)
+- Privacy: body_snippet (truncated), never body_plain in logs; HITL grep enforced (no auto-send paths)
+- 138 new tests: 39 schema, 57 context builder, 15 service, 14 task (4 parallel agents)
+- 1195 total tests passing; quality gates: mypy 0, ruff 0, grep enforcement all pass
+
+## 2026-02-28 -- Block 10: CRM Sync Service
+
+- CRMSyncService: orchestrates idempotency check → contact lookup → conditional create → activity log → lead create → field updates
+- Per-operation try/except isolation (D7): CRMAuthError and CRMRateLimitError re-raised, CRMAdapterError silenced per-operation
+- Idempotency via DB (never CRM API): existing SYNCED record → cached result
+- Independent CRMSyncRecord commit (D13) — partial failure recorded
+- contact_id=None short-circuit: operations after lookup require contact_id
+- DuplicateContactError triggers re-lookup (race condition handling)
+- Service schemas: CRMSyncConfig, CRMSyncRequest, CRMOperationStatus, CRMSyncResult
+- Celery task: sync→async bridge, CRMAuthError=no retry, CRMRateLimitError=retry with countdown
+- 57 new tests: 28 schema, 19 service, 10 task (3 parallel agents)
+- 1057 total tests passing; quality gates: mypy 0, ruff 0
+
 ## 2026-02-28 -- Block 09: Routing Service
 
 - RoutingService: orchestrates rule evaluation → idempotent dispatch → partial failure handling → state transition
