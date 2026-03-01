@@ -134,3 +134,5 @@ Configured in .claude/settings.local.json (do not commit).
 - `-> None` methods: bare `await adapter.method()`, never `result = await ...` — mypy `func-returns-value` error on assignment
 - Service test mocking: `MagicMock()` for ORM models (not `Model.__new__()` — SQLAlchemy InstrumentedAttribute fails without live session); `db.execute.side_effect = [list]` for sequential multi-query mocks (B08/B09 pattern)
 - Handoff docs (`docs/handoffs/`) contain all needed context — minimal codebase exploration required for each block implementation
+- ruff B904: `raise X from exc` (not bare `raise X`) inside `except` blocks — agents frequently miss this; post-agent fix pattern
+- ORM constructor datetimes: `server_default=func.now()` only applies at DB INSERT — pass `datetime.now(UTC)` explicitly when constructing ORM objects in service code
