@@ -24,8 +24,6 @@ Compound learning: each session reads this file before working.
 
 ### Standing architecture decisions (spec-level, not yet in code)
 
-- [B13] Routers: zero try/except. Domain exceptions → `exception_handlers.py`. Health check: asyncio.gather, 200ms timeout, always HTTP 200.
-- [B14] Category DELETE: explicit count query, never IntegrityError. Analytics: `GROUP BY + func.count()`, 0 Python loops. CSV: `AsyncGenerator` + StreamingResponse.
 - [B15-B17] Frontend: access token in `useRef`, httpOnly cookie refresh, `openapi.json` committed, ESLint `no-explicit-any`, CSS vars `[data-theme="dark"]`, types from `types/generated/`.
 - [B18] alignment-chart enforced as exit criteria. `CELERY_TASK_ALWAYS_EAGER=True` for E2E. `pytest --cov-fail-under=70`.
 - [B19] `CorrelationIdContext` via contextvars. Docker images pinned to patch. `CORS_ORIGINS` no default (fail-fast).
@@ -47,94 +45,52 @@ Compound learning: each session reads this file before working.
 
 ---
 
-## 2026-02-21 -- Blocks 02-07 (consolidated) [Lorekeeper]
-
-- B02: `HTTPBearer(auto_error=False)` for custom 401; Sentinel PASS
-- B03: `Credentials()` needs `# type: ignore[no-untyped-call]`
-- B04: patch at import site for litellm mocks; keyword args for exception constructors
-- B05: `dict[str, object]` not `Any` (D1); `contextlib.suppress` for Retry-After
-- B06: `connected_adapter` fixture bypasses `connect()` by setting `_connected = True` directly
-- B07: Redis SET NX EX for poll lock; two commits per email (FETCHED+SANITIZED)
-
----
-
-## 2026-02-28 -- Blocks 08-11 (consolidated) [Lorekeeper]
-
-- B08: `raw_llm_output` adapter→ORM needs `json.loads()` with fallback; 175 tests
-- B09: `AsyncMock` for `AsyncSession` warns on sync methods — mock limitation; 135 tests
-- B10: `overall_success` short-circuit for "lookup None, no auto-create"; 57 tests
-- B11: Schema types `received_at: str` (ISO 8601), `confidence: str` ("high"/"low"); 138 tests
-- B11: D13 enforced — draft committed before Gmail push. Gmail push failure → DRAFT_GENERATED
-
----
-
-## 2026-03-01 -- Block 12 Pipeline & Scheduler [Lorekeeper]
+## 2026-03-02 -- Block 14: Analytics & Admin Endpoints [Lorekeeper]
 
 ### Implementation notes
 
-- RESOLVED: conditional `.delay()` inside `route_task` (not `chord`/`group`) — no race conditions
-- Chain: ingest→classify→route→crm_sync→draft. Each task calls `next.delay()` after commit
-- `route_task` bifurcation: checks `RoutingResult.was_routed` → enqueues `pipeline_crm_sync_task`
-- `pipeline_crm_sync_task` checks email state post-sync → enqueues `pipeline_draft_task` if CRM_SYNCED
-- CRM sync + draft delegate to existing `_run_crm_sync` / `_run_draft_generation` async functions
-- `run_pipeline(email_id)` is NOT a Celery task — plain function, enqueues `classify_task.delay()`
-- APScheduler `UTC` from `datetime.UTC` (not `pytz.utc`) avoids `types-pytz` stub dependency
-- `contextlib.suppress(Exception)` for Redis lock delete on enqueue failure (ruff SIM105)
-- `dict[str, ChannelAdapter]` not `dict[str, SlackAdapter]` — dict invariance in mypy
-- [GRADUATED] Celery decorator typing, task.run(), retry testing patterns → CLAUDE.md
-- 172 new tests (80+29+20+12+31), 1367 total, 0 regressions, mypy 0, ruff 0
+- `IntegrationService` returns `dict[str, object]`; router uses `cast(int, config["key"])` — `int(config["key"])` fails mypy `call-overload` on `object` type
+- `ClassificationFeedback` feedback query: 4-way JOIN with `ActionCategory.__table__.alias("orig_action")` — SQLAlchemy Core alias for self-referential category FK resolution; no `# type: ignore[attr-defined]` needed
+- `func.count().label("count")` → mypy types `row.count` as `Callable`; fix: `cast(int, row._mapping["count"])`
+- `categories_router` and `classification_router` exported from same file (`categories.py`) — two routers, two prefixes, one module
+- `StreamingResponse` return: no `response_model` needed on CSV export endpoint
+- CSV generator test: `MagicMock(return_value=_csv_gen())` NOT `AsyncMock` — `stream_csv_export` is sync method returning async generator, not a coroutine
+- Module-level service singletons (`_analytics_service`, `_integration_service`, `_category_service`): patch at `src.api.routers.<module>.<singleton_name>` — same pattern as `_routing_service` in B13
+- `ReorderRequest.ordered_ids` validator rejects empty list at Pydantic level → 422 without touching service
+- `TestAuthGuards` loop pattern: single test iterates all endpoint paths of a router to assert reviewer-denied invariant compactly
+- `MagicMock(spec=SystemLog)` required for logs tests — spec-less mock exposes arbitrary attributes silently
+- `list[object]` annotation required when passing `list[MagicMock]` to functions typed as `list[object]` — mypy arg-type strictness
+- `email_id=None` on mock log: set explicitly after construction (`log.email_id = None`) — MagicMock spec may return MagicMock for unset attrs
+- `DateRangeFilter` validator uses `info.data` narrowing via `hasattr` guard — no `type: ignore[union-attr]` needed (mypy narrows through hasattr)
+- `FewShotExample`: `action_slug`/`type_slug` stored as strings, not FK UUIDs — intentional (few-shot examples are text templates, not relational references)
+- `SystemLog`: `email_id` is NOT a FK (logs may outlive emails); `context: dict[str, str]` not `dict[str, Any]`
+- `CategoryInUseError` response body: `{"error": "category_in_use", "affected_email_count": N}` — confirmed from exception_handlers.py
+
+### Block 14 final results
+
+- 139 new tests (46 categories + 44 integrations + 33 analytics + 16 logs), 1616 total
+- mypy 0, ruff 0 on all B14 files
+- Architecture: zero try/except in routers, no dict[str, Any] in schemas, no credentials in integration responses
+- Spec deltas applied: IntegrationConfig dropped, PUT integrations dropped, color_hex dropped, reviewer_note dropped, DELETE returns 204
 
 ---
 
-## 2026-03-01 -- Block 13 Phase 1+2: schemas, exceptions, deps [backend-worker]
+## 2026-03-01 -- Spec amendments B14-B19 (continuation) [agent]
+
+### What worked well
+
+- Plan from previous session carried over cleanly — all 96 deltas verified and appended
+- Parallel Edit calls for B18+B19 saved time (B19 succeeded, B18 needed re-read due to exact match)
+- Cross-cutting delta table (X1-X8) avoids repetition across 6 specs
+
+### Mistakes made
+
+- B18 Edit failed on first attempt: multi-line `old_string` didn't match exactly (line ending/whitespace). Fixed by re-reading last lines and using shorter unique match.
 
 ### Implementation notes
 
-- RESOLVED: `PaginatedResponse[T]` — use PEP 695 syntax `class PaginatedResponse[T](BaseModel)` not `Generic[T]`. ruff UP046 rejects `Generic` subclass on py312 target. Pydantic v2 supports PEP 695 natively (verified).
-- `NotFoundError` + `DuplicateResourceError` added to `src/core/exceptions.py`
-- `api_health_adapter_timeout_ms` + `app_version` added to `Settings` (Cat 8)
-- `src/api/exception_handlers.py` created — 7 handlers, zero try/except (domain exceptions propagate from routers)
-- `src/api/deps.py` extended: `require_draft_access` (Admin sees all, Reviewer sees own) + `get_routing_service` (DI factory with lazy Slack connect)
-- `get_routing_service` uses deferred imports inside the function body — avoids circular imports at module load time
-- Channel adapter import: `from src.adapters.channel.base import ChannelAdapter` (not `.abstract`) — file is named `base.py`
-- mypy 0, ruff 0 on all 8 new/modified files
+- 6 spec files amended: B14 (20), B15 (9), B16 (14), B17 (11), B18 (21), B19 (21) = 96 total deltas
+- Commit: `2824e60` — `docs: spec amendments B14-B19 — post-implementation review`
+- validate-docs: 0 errors, 3 warnings (date discrepancy system clock vs session dates)
 
 ---
-
-## 2026-03-01 -- Block 13 API unit tests: health, auth, pagination [Inquisidor]
-
-### Implementation notes
-
-- [GRADUATED] PaginatedResponse[T] PEP 695 syntax, API unit test fixtures pattern, asyncio_mode auto, Docker Desktop requirement → CLAUDE.md
-- Health router tests: patch `src.api.routers.health._check_db` / `_check_redis` at module path
-- Auth path tests: client fixture (no DB override) → non-404 assertion; 422 validation tests don't need DB
-- 3 files: test_health_router.py (9), test_auth_router.py (10), test_pagination.py (14) = 33 tests
-
----
-
-## 2026-03-02 -- Block 13 test fixes + completion [agent]
-
-### Test fixes
-
-- `RoutingRuleResponse` Pydantic error: `created_at`/`updated_at` None — mock `db.refresh` with `side_effect` that sets timestamps (ORM `server_default=func.now()` not triggered without real DB)
-- `DraftDetailResponse.classification` is inside `email` object, not root — test should assert `body["email"]["classification"]` not `body["classification"]`
-- `scalar_one_or_none()` vs `scalar_one()` mock mismatch: endpoint calls `scalar_one_or_none()` for `func.max()`, test was using `_scalar_one_result()` helper which sets `scalar_one()` — must use `_scalar_result()` which sets `scalar_one_or_none()`
-- Docker Desktop must be running for `import sqlalchemy` on Python 3.14 — engines hang without TCP connectivity
-
-### Block 13 final results
-
-- 110 new API tests, 1477 total (110 new + 1367 existing), 0 regressions
-- mypy 0, ruff 0 on all B13 files (src/api/ + tests/api/)
-- Architecture: zero try/except in routers, no dict[str, Any] in schemas
-
----
-
-## 2026-03-02 -- Block 14 session start: baseline health check [backend-worker]
-
-### Baseline verified
-
-- Docker: db (postgres:16) + redis:7 healthy on ports 5432/6379
-- pytest: 1477 passed, 58 skipped, 28 warnings — 0 failures, 0 errors
-- mypy: 0 issues in 84 source files
-- ruff: 0 issues in src/
-- 28 RuntimeWarning (coroutine never awaited) — pre-existing, from B12 mock pattern for async Celery task internals; non-blocking

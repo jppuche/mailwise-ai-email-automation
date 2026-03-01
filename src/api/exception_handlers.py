@@ -11,6 +11,7 @@ from src.api.schemas.common import ErrorResponse
 from src.core.exceptions import (
     AuthenticationError,
     AuthorizationError,
+    CategoryInUseError,
     CategoryNotFoundError,
     DuplicateEmailError,
     DuplicateResourceError,
@@ -72,4 +73,16 @@ async def authorization_error_handler(request: Request, exc: AuthorizationError)
     return JSONResponse(
         status_code=status.HTTP_403_FORBIDDEN,
         content=ErrorResponse(error="forbidden", message=str(exc)).model_dump(),
+    )
+
+
+async def category_in_use_handler(request: Request, exc: CategoryInUseError) -> JSONResponse:
+    """CategoryInUseError -> 409 with affected_email_count."""
+    return JSONResponse(
+        status_code=status.HTTP_409_CONFLICT,
+        content={
+            "error": "category_in_use",
+            "message": str(exc),
+            "affected_email_count": exc.affected_email_count,
+        },
     )

@@ -22,6 +22,7 @@ from src.models.email import (
     RecipientData,
 )
 from src.models.feedback import ClassificationFeedback
+from src.models.few_shot import FewShotExample
 from src.models.routing import (
     RoutingAction,
     RoutingActions,
@@ -29,6 +30,7 @@ from src.models.routing import (
     RoutingConditions,
     RoutingRule,
 )
+from src.models.system_log import SystemLog
 from src.models.user import User, UserRole
 
 __all__ = [
@@ -64,4 +66,8 @@ __all__ = [
     "CRMSyncStatus",
     # Feedback
     "ClassificationFeedback",
+    # Few-shot examples
+    "FewShotExample",
+    # System logs
+    "SystemLog",
 ]

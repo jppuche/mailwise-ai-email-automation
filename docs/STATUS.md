@@ -12,11 +12,12 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 14: Analytics & Admin Endpoints (next)
-- [ ] Blocks 15-19 (pending)
+- [ ] Block 15: Frontend SPA — Auth & Email List (next)
+- [ ] Blocks 16-19 (pending)
 
 ## Recently Completed
 
+- [x] Block 14: Analytics & Admin Endpoints (4 routers, 26 endpoints, 3 services, 139 tests, 1616 total)
 - [x] Block 13: API Endpoints (4 routers, 22 endpoints, exception handlers, 110 tests, 1477 total)
 - [x] Block 12: Pipeline & Scheduler (Celery 5-task chain, APScheduler, Redis lock, 172 tests, 1367 total)
 - [x] Block 11: Draft Generation (DraftContextBuilder, DraftGenerationService, Gmail push, 138 tests, 1195 total)
@@ -56,5 +57,4 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 | honnibal/pre-mortem | Installed | Sentinel | Pipeline fragility analysis |
 | honnibal/alignment-chart | Installed | Inquisidor | Function/test categorization |
 | honnibal/concept-analysis | Installed | Lorekeeper | Domain glossary, naming consistency |
-
-Rejected: PostgreSQL MCP, SAST MCP, HubSpot MCP (deferred), Slack MCP, laurigates skill
+<!-- Rejected: PostgreSQL MCP, SAST MCP, HubSpot MCP (deferred), Slack MCP, laurigates skill -->

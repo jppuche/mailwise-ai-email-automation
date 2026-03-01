@@ -175,9 +175,7 @@ class DraftGenerationService:
 
         # Step 8: Transition email state — external state (D7)
         try:
-            result_obj = await db.execute(
-                select(Email).where(Email.id == email_id)
-            )
+            result_obj = await db.execute(select(Email).where(Email.id == email_id))
             email_orm = result_obj.scalar_one_or_none()
             if email_orm is not None:
                 email_orm.transition_to(EmailState.DRAFT_GENERATED)
@@ -197,8 +195,8 @@ class DraftGenerationService:
         should_push = request.push_to_gmail or self._config.push_to_gmail
 
         if should_push:
-            gmail_draft_id, pushed_to_provider, push_failed = (
-                await self._push_to_gmail(request, draft_text.content)
+            gmail_draft_id, pushed_to_provider, push_failed = await self._push_to_gmail(
+                request, draft_text.content
             )
 
         # Step 10: Return result — local computation (D8)
@@ -261,9 +259,7 @@ class DraftGenerationService:
         External state (D7): SQLAlchemyError on state transition logged, not re-raised.
         """
         try:
-            result = await db.execute(
-                select(Email).where(Email.id == email_id)
-            )
+            result = await db.execute(select(Email).where(Email.id == email_id))
             email_orm = result.scalar_one_or_none()
             if email_orm is not None:
                 email_orm.transition_to(EmailState.DRAFT_FAILED)

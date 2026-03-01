@@ -113,6 +113,11 @@ class Settings(BaseSettings):
     api_health_adapter_timeout_ms: int = Field(default=200)
     app_version: str = Field(default="0.1.0")
 
+    # Analytics (Cat 8: configurable defaults)
+    analytics_max_date_range_days: int = Field(default=365)
+    analytics_csv_chunk_size: int = Field(default=1000)
+    analytics_default_timezone: str = Field(default="UTC")
+
 
 def get_settings() -> Settings:
     return Settings()

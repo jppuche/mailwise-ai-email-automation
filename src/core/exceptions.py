@@ -50,3 +50,19 @@ class DuplicateResourceError(Exception):
     """Raised when a create operation violates a uniqueness constraint.
     HTTP mapping: 409 Conflict.
     """
+
+
+class CategoryInUseError(Exception):
+    """Raised when attempting to delete a category referenced by classifications.
+
+    HTTP mapping: 409 Conflict with affected_email_count in body.
+    Callers: CategoryService.delete_action_category / delete_type_category.
+    """
+
+    def __init__(self, category_id: object, affected_email_count: int) -> None:
+        self.category_id = category_id
+        self.affected_email_count = affected_email_count
+        super().__init__(
+            f"Cannot delete category {category_id}: "
+            f"{affected_email_count} classifications reference it"
+        )

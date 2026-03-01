@@ -247,6 +247,21 @@
 - 172 new tests (80 result types + 29 chain + 20 partial failure + 12 scheduler lock + 31 poll job)
 - 1367 total tests, 0 regressions, mypy 0 errors, ruff 0 violations
 
+## 2026-03-02 -- Block 14: Analytics & Admin Endpoints
+
+- 4 new routers: categories (13 endpoints), integrations (8 endpoints), analytics (5 endpoints), logs (1 endpoint) — 26 total
+- 3 new services: CategoryService (CRUD + FK guard + reorder), AnalyticsService (SQL GROUP BY aggregation + CSV streaming), IntegrationService (read-only config + adapter test_connection)
+- 2 new ORM models: FewShotExample, SystemLog
+- 4 new schema modules: categories, integrations, analytics, logs
+- Config: 3 new Cat 8 defaults (analytics_max_date_range_days, analytics_csv_chunk_size, analytics_default_timezone)
+- CategoryInUseError added to exception hierarchy; handler returns `affected_email_count` in error body
+- IntegrationConfig dropped (read-only from Settings env vars); PUT endpoints dropped (restart-to-reconfigure pattern)
+- CSV export: AsyncGenerator + StreamingResponse chunked reads — no buffering of full result set
+- Feedback endpoint: 4-way JOIN with table aliases to resolve category UUID FKs to slugs
+- Architecture constraints maintained: zero try/except in routers, no dict[str, Any] in schemas, no credentials in integration responses
+- 139 new tests: 46 categories, 44 integrations, 33 analytics, 16 logs
+- 1616 total tests, 0 regressions, mypy 0 errors, ruff 0 violations
+
 ## 2026-03-02 -- Block 13: REST API Core
 
 - 4 routers: health, emails, routing-rules, drafts — all under `/api/v1/` prefix

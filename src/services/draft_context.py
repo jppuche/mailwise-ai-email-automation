@@ -117,22 +117,26 @@ class DraftContextBuilder:
         ]
         if email.sender_name:
             email_lines.append(f"Name: {email.sender_name}")
-        email_lines.extend([
-            f"Subject: {email.subject}",
-            f"Received: {email.received_at}",
-            f"Body:\n{email.body_snippet}",
-        ])
+        email_lines.extend(
+            [
+                f"Subject: {email.subject}",
+                f"Received: {email.received_at}",
+                f"Body:\n{email.body_snippet}",
+            ]
+        )
         sections.append("\n".join(email_lines))
 
         # CLASSIFICATION section
         cls = context.classification
         sections.append(
-            "\n".join([
-                "## CLASSIFICATION",
-                f"Action: {cls.action}",
-                f"Type: {cls.type}",
-                f"Confidence: {cls.confidence}",
-            ])
+            "\n".join(
+                [
+                    "## CLASSIFICATION",
+                    f"Action: {cls.action}",
+                    f"Type: {cls.type}",
+                    f"Confidence: {cls.confidence}",
+                ]
+            )
         )
 
         # CRM CONTEXT section (conditional)
@@ -171,9 +175,7 @@ class DraftContextBuilder:
         if org.signature:
             instruction_lines.append(f"Signature: {org.signature}")
         if org.prohibited_language:
-            instruction_lines.append(
-                f"Prohibited language: {', '.join(org.prohibited_language)}"
-            )
+            instruction_lines.append(f"Prohibited language: {', '.join(org.prohibited_language)}")
         instruction_lines.append(
             "Draft a professional reply to this email based on the context above."
         )
