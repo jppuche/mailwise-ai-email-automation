@@ -12,11 +12,12 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 09: Routing Service (next)
-- [ ] Blocks 10-19 (pending)
+- [ ] Block 10: CRM Sync Service (next)
+- [ ] Blocks 11-19 (pending)
 
 ## Recently Completed
 
+- [x] Block 09: Routing Service (RoutingService, RuleEngine, 6 operators, idempotent dispatch, 135 tests, 1000 total)
 - [x] Block 08: Classification Service (PromptBuilder, HeuristicClassifier, 5-layer defense, 175 tests, 865 total)
 - [x] Block 07: Ingestion Pipeline (IngestionService, dedup, thread-aware, 53 tests, 690 total)
 - [x] Block 06: HubSpot CRM Adapter (HubSpotAdapter, 7 methods, 170 tests, 637 total)

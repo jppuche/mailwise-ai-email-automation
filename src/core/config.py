@@ -77,6 +77,11 @@ class Settings(BaseSettings):
     channel_slack_timeout_seconds: int = Field(default=10)
     channel_destinations_page_size: int = Field(default=200)
 
+    # Routing (Cat 8: configurable defaults)
+    routing_vip_senders: str = Field(default="")
+    routing_dashboard_base_url: str = Field(default="http://localhost:3000")
+    routing_snippet_length: int = Field(default=150)
+
     # HubSpot
     hubspot_access_token: str = Field(default="")
     hubspot_rate_limit_per_10s: int = Field(default=100)

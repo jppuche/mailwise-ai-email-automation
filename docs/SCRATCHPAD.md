@@ -42,7 +42,7 @@ Compound learning: each session reads this file before working.
 
 - [inquisidor] B07: asyncio.Lock vs Redis SET NX EX for poll lock (Redis correct for multi-worker)
 - [RESOLVED] B08: `tuple[str, str]` for `build_classify_prompt()` return (simple, spec says tuple)
-- [inquisidor] B09: `frozenset[str]` vs `set[str]` for VIP senders
+- [RESOLVED] B09: `frozenset[str]` for VIP senders (immutable after construction)
 - [inquisidor] B10: `dict[str, str]` vs `list[FieldUpdate]` for field_updates
 - [inquisidor] B11: `list[str]` vs `list[InteractionRecord]` for recent_interactions
 - [inquisidor] B12: conditional `.delay()` in `route_task` vs `chord`/`group` — race conditions?
@@ -100,3 +100,14 @@ Compound learning: each session reads this file before working.
 - Only 7 batch test failures from agents (MagicMock vs Pydantic) — quick fix
 - All grep enforcement checks passed on first try (0 try/except in pure modules, alias present)
 - 865 total tests, 0 regressions
+
+---
+
+## 2026-02-28 -- Block 09 Routing Service (consolidated) [Lorekeeper]
+
+- ruff UP042: `ConditionOperator(str, enum.Enum)` → `enum.StrEnum` (consistent with models)
+- ruff UP017: `timezone.utc` → `from datetime import UTC` + `datetime.now(UTC)`
+- `AsyncMock` for `AsyncSession` warns on `db.add()` (sync method) — mock limitation, not a bug
+- `transition_to` side_effect on mock mutates `email.state` → real assertion after routing
+- 5 parallel test agents: 35 + 44 + 26 + 10 + 20 = 135 new tests; all grep checks passed first try
+- 1000 total tests, 0 regressions, mypy 0, ruff 0

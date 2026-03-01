@@ -132,3 +132,5 @@ Configured in .claude/settings.local.json (do not commit).
 - Adapter `_ensure_connected()` + `assert self._client is not None` after call — consistent mypy narrowing pattern across all adapters (B03/B05/B06)
 - Sync SDK wrapping: `asyncio.to_thread(sdk_method, **kwargs)` for sync-only SDKs (hubspot-api-client); test with monkeypatch `async def _sync_to_thread(func, /, *args, **kwargs): return func(*args, **kwargs)`
 - `-> None` methods: bare `await adapter.method()`, never `result = await ...` — mypy `func-returns-value` error on assignment
+- Service test mocking: `MagicMock()` for ORM models (not `Model.__new__()` — SQLAlchemy InstrumentedAttribute fails without live session); `db.execute.side_effect = [list]` for sequential multi-query mocks (B08/B09 pattern)
+- Handoff docs (`docs/handoffs/`) contain all needed context — minimal codebase exploration required for each block implementation

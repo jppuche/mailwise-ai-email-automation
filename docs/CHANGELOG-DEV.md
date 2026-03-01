@@ -173,6 +173,21 @@
 - 53 new tests: 20 schema, 27 service, 6 task. 690 total, 0 regressions
 - Quality gates: mypy 0 errors, ruff 0 violations, pytest 690/690
 
+## 2026-02-28 -- Block 09: Routing Service
+
+- RoutingService: orchestrates rule evaluation → idempotent dispatch → partial failure handling → state transition
+- RuleEngine: pure local computation (0 try/except, 0 adapter imports) — 6 operators (eq, contains, in, not_in, starts_with, matches_domain)
+- Service schemas: 7 Pydantic types (RoutingContext, RoutingRequest, RoutingActionDef, RuleMatchResult, RoutingResult, RuleTestResult)
+- `_compute_dispatch_id()`: SHA-256[:32] of `"{email_id}:{rule_id}:{channel}:{destination}"` for idempotent re-dispatch detection
+- Partial failure (Cat 6/D13): each RoutingAction gets own `db.commit()`; failure in action N does not revert N-1
+- VIP sender priority escalation: email match, `*.domain` wildcard, `URGENT_KEYWORDS` frozenset, `escalate` action slug
+- `test_route()` dry-run: evaluates rules without dispatching, creating actions, or changing email state
+- Unrouted emails (no matching rules) transition to ROUTED (not ROUTING_FAILED) — valid business case
+- try-except D7: DB loads (SQLAlchemyError), adapter dispatch (4 specific ChannelAdapter exceptions); D8: rule eval, dispatch_id, payload build, priority — all pure local
+- Settings: 3 new Cat 8 defaults (routing_vip_senders, routing_dashboard_base_url, routing_snippet_length)
+- 135 new tests: 35 schema, 44 rule_engine, 26 service, 10 idempotency, 20 test_mode (5 parallel agents)
+- 1000 total tests passing; quality gates: mypy 0 errors, ruff 0 violations, grep enforcement all pass
+
 ## 2026-02-21 -- Block 04: LLM Adapter
 
 - LLMAdapter ABC with 3 async abstract methods (classify, generate_draft, test_connection) and contract docstrings
