@@ -231,3 +231,18 @@
 - Fallback logs `llm_parse_fallback` with `raw_output_preview=raw_output[:200]` (PII-safe: LLM output only)
 - 106 new tests: 29 schema, 28 parser, 35 adapter (mocked litellm.acompletion), 14 contract
 - 364 total tests passing; quality gates: mypy 0 errors, ruff 0 violations, pytest 364/364
+
+## 2026-03-01 -- Block 12: Pipeline & Scheduler
+
+- Celery app: `src/tasks/celery_app.py` — broker Redis/0, backend Redis/1, JSON serializer, UTC, autodiscover
+- Result types: `src/tasks/result_types.py` — 5 frozen dataclasses (IngestResult, ClassifyResult, RouteResult, CRMSyncTaskResult, DraftTaskResult), no `Any` fields
+- Pipeline: `src/tasks/pipeline.py` — `run_pipeline()` + 5 Celery tasks (ingest→classify→route→crm_sync→draft), each calls `next.delay()` after commit (D13)
+- Bifurcation: `route_task` checks `RoutingResult.was_routed` → enqueues `pipeline_crm_sync_task`; CRM sync chains to draft on CRM_SYNCED state
+- Scheduler: `src/scheduler/main.py` (APScheduler entry point) + `src/scheduler/jobs.py` (Redis-locked poll per account)
+- Lock safety: `SET NX EX` atomic acquisition, `contextlib.suppress` for release failure, TTL >= poll interval assertion at startup
+- Config: 5 new settings in `src/core/config.py` (celery_broker_url, celery_result_backend, celery_result_expires, pipeline_scheduler_lock_key_prefix, pipeline_scheduler_lock_ttl_seconds)
+- D3: `AsyncResult.get()` prohibited — all results via DB/typed dataclasses
+- D7: exactly 5 `except Exception` across task files (one per task)
+- Graduated to CLAUDE.md: Celery decorator typing, task.run() testing, retry testing patterns
+- 172 new tests (80 result types + 29 chain + 20 partial failure + 12 scheduler lock + 31 poll job)
+- 1367 total tests, 0 regressions, mypy 0 errors, ruff 0 violations

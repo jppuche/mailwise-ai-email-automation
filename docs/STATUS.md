@@ -12,11 +12,12 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 12: Pipeline & Scheduler (next)
-- [ ] Blocks 13-19 (pending)
+- [ ] Block 13: API Endpoints (next)
+- [ ] Blocks 14-19 (pending)
 
 ## Recently Completed
 
+- [x] Block 12: Pipeline & Scheduler (Celery 5-task chain, APScheduler, Redis lock, 172 tests, 1367 total)
 - [x] Block 11: Draft Generation (DraftContextBuilder, DraftGenerationService, Gmail push, 138 tests, 1195 total)
 - [x] Block 10: CRM Sync Service (CRMSyncService, 6-op chain, idempotent, 57 tests, 1057 total)
 - [x] Block 09: Routing Service (RoutingService, RuleEngine, 6 operators, idempotent dispatch, 135 tests, 1000 total)
@@ -26,9 +27,7 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 - [x] Block 05: Slack Channel Adapter (SlackAdapter, Block Kit formatter, 103 tests, 467 total)
 - [x] Block 04: LLM Adapter (LiteLLMAdapter, 7-shape parser, 106 tests, 364 total)
 - [x] Block 03: Gmail Adapter (ABC + GmailAdapter, 85 tests, 258 total)
-- [x] Block 02: Auth & Users (JWT+bcrypt, Redis refresh tokens, RBAC, 231 tests)
-- [x] Block 01: Database Models (9 models, 132 tests, Sentinel pass)
-- [x] Block 00: Scaffolding (Docker 4/6 healthy)
+- [x] Blocks 00-02: Scaffolding, DB Models, Auth & Users (231 tests)
 
 ## Team & Tooling
 

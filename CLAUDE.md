@@ -136,3 +136,6 @@ Configured in .claude/settings.local.json (do not commit).
 - Handoff docs (`docs/handoffs/`) contain all needed context — minimal codebase exploration required for each block implementation
 - ruff B904: `raise X from exc` (not bare `raise X`) inside `except` blocks — agents frequently miss this; post-agent fix pattern
 - ORM constructor datetimes: `server_default=func.now()` only applies at DB INSERT — pass `datetime.now(UTC)` explicitly when constructing ORM objects in service code
+- Deferred import testing: `sys.modules` injection or `patch.dict("sys.modules", ...)` for async functions with `from src.X import Y` inside the body — standard pattern since B10
+- Celery task decorators: `@celery_app.task(bind=True)  # type: ignore[untyped-decorator]` — Celery's `task()` returns untyped; `task.run(...)` bypasses dispatch and is already bound to the task instance (no mock `self` needed)
+- Celery task retry testing: `self.retry.side_effect = celery.exceptions.Retry()` replicates real raise-on-retry; use `pytest.raises(celery.exceptions.Retry)` to verify retry was called

@@ -56,6 +56,13 @@ class Settings(BaseSettings):
     # Celery
     celery_max_retries: int = Field(default=3)
     celery_backoff_base: int = Field(default=60)
+    celery_broker_url: str = Field(default="redis://redis:6379/0")
+    celery_result_backend: str = Field(default="redis://redis:6379/1")
+    celery_result_expires: int = Field(default=3600)
+
+    # Pipeline & Scheduler (Cat 8: configurable defaults)
+    pipeline_scheduler_lock_key_prefix: str = Field(default="mailwise:scheduler:lock")
+    pipeline_scheduler_lock_ttl_seconds: int = Field(default=300)
 
     # Gmail OAuth
     gmail_client_id: str = Field(default="")

@@ -84,9 +84,7 @@ async def _run_draft_generation(task: object, email_id_str: str) -> None:
         tone=settings.draft_org_tone,
         signature=settings.draft_org_signature or None,
         prohibited_language=[
-            s.strip()
-            for s in settings.draft_org_prohibited_language.split(",")
-            if s.strip()
+            s.strip() for s in settings.draft_org_prohibited_language.split(",") if s.strip()
         ],
     )
 
