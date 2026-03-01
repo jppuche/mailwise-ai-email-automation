@@ -1,6 +1,6 @@
 # Project Status — mailwise
 
-**Last updated:** 2026-03-01
+**Last updated:** 2026-03-02
 
 ## Current phase
 
@@ -12,11 +12,12 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 13: API Endpoints (next)
-- [ ] Blocks 14-19 (pending)
+- [ ] Block 14: Analytics & Admin Endpoints (next)
+- [ ] Blocks 15-19 (pending)
 
 ## Recently Completed
 
+- [x] Block 13: API Endpoints (4 routers, 22 endpoints, exception handlers, 110 tests, 1477 total)
 - [x] Block 12: Pipeline & Scheduler (Celery 5-task chain, APScheduler, Redis lock, 172 tests, 1367 total)
 - [x] Block 11: Draft Generation (DraftContextBuilder, DraftGenerationService, Gmail push, 138 tests, 1195 total)
 - [x] Block 10: CRM Sync Service (CRMSyncService, 6-op chain, idempotent, 57 tests, 1057 total)

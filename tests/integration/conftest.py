@@ -221,10 +221,10 @@ async def admin_tokens(
 ) -> tuple[str, str]:
     """Log in the admin user and return (access_token, refresh_token).
 
-    Performs a real POST /auth/login request through the ASGI stack.
+    Performs a real POST /api/v1/auth/login request through the ASGI stack.
     """
     response = await async_client.post(
-        "/auth/login",
+        "/api/v1/auth/login",
         json={"username": admin_user.username, "password": "admin_pass_123"},
     )
     assert response.status_code == 200, f"Admin login failed: {response.text}"
@@ -239,7 +239,7 @@ async def reviewer_tokens(
 ) -> tuple[str, str]:
     """Log in the reviewer user and return (access_token, refresh_token)."""
     response = await async_client.post(
-        "/auth/login",
+        "/api/v1/auth/login",
         json={"username": reviewer_user.username, "password": "reviewer_pass_123"},
     )
     assert response.status_code == 200, f"Reviewer login failed: {response.text}"

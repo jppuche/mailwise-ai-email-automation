@@ -246,3 +246,16 @@
 - Graduated to CLAUDE.md: Celery decorator typing, task.run() testing, retry testing patterns
 - 172 new tests (80 result types + 29 chain + 20 partial failure + 12 scheduler lock + 31 poll job)
 - 1367 total tests, 0 regressions, mypy 0 errors, ruff 0 violations
+
+## 2026-03-02 -- Block 13: REST API Core
+
+- 4 routers: health, emails, routing-rules, drafts — all under `/api/v1/` prefix
+- 22 endpoints: health(1), emails(6), routing-rules(7), drafts(5), auth(existing 4, re-mounted)
+- Schemas: `PaginatedResponse[T]` (PEP 695), 4 schema modules (common, emails, routing, drafts)
+- Exception handlers: 7 centralized handlers in `exception_handlers.py` — zero try/except in routers
+- Auth: `require_draft_access` (Admin all, Reviewer own), `get_routing_service` (DI with deferred imports)
+- Config: `api_health_adapter_timeout_ms`, `app_version` (Cat 8 configurable defaults)
+- Integration test paths updated: `/auth/*` → `/api/v1/auth/*`
+- Architecture constraints enforced: zero try/except in routers, no `dict[str, Any]` in schemas, PII excluded from list responses
+- 110 new tests: 10 health, 14 auth, 14 pagination, 29 emails, 20 routing-rules, 18 drafts + 5 misc
+- 1477 total tests, 0 regressions, mypy 0 errors, ruff 0 violations

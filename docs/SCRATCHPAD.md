@@ -32,7 +32,6 @@ Compound learning: each session reads this file before working.
 
 ### Open questions — unresolved (carry to development blocks)
 
-- [inquisidor] B13: `PaginatedResponse[T]` Generic BaseModel + Pydantic v2 + `model_rebuild()`?
 - [inquisidor] B16: `confidence` in `ReviewQueueItem` — `'high' | 'low'` or float 0.0–1.0?
 - [backend-worker] B17: `PUT /api/routing-rules/reorder` — `string[]` or `{ id, priority }[]`?
 - [inquisidor] B18: `SQLAlchemyModelFactory` async pattern, DB isolation E2E with Celery eager
@@ -44,7 +43,6 @@ Compound learning: each session reads this file before working.
 
 - WARNING-01: `LLM_ALLOWED_MODELS` allowlist needed (B04/B14)
 - WARNING-02: `DRAFT_ORG_SYSTEM_PROMPT` max-length + startup warning (B11)
-- WARNING-03: `next(..., None)` for fallback category (B08) — RESOLVED in B08
 - WARNING-B02-01: Timing oracle in login — bcrypt not called for nonexistent users (B02)
 
 ---
@@ -86,9 +84,57 @@ Compound learning: each session reads this file before working.
 - [GRADUATED] Celery decorator typing, task.run(), retry testing patterns → CLAUDE.md
 - 172 new tests (80+29+20+12+31), 1367 total, 0 regressions, mypy 0, ruff 0
 
-### Test patterns
+---
 
-- `task.run(...)` bypasses Celery dispatch — already bound, no mock `self` needed
-- Patch `asyncio.run` for outer wrappers; patch individual async fns for inner tests
-- `_run_draft_generation` is deferred import INSIDE task — must patch asyncio level
-- `_close_coro_and_return` helper as `asyncio.run` side_effect suppresses coroutine warnings
+## 2026-03-01 -- Block 13 Phase 1+2: schemas, exceptions, deps [backend-worker]
+
+### Implementation notes
+
+- RESOLVED: `PaginatedResponse[T]` — use PEP 695 syntax `class PaginatedResponse[T](BaseModel)` not `Generic[T]`. ruff UP046 rejects `Generic` subclass on py312 target. Pydantic v2 supports PEP 695 natively (verified).
+- `NotFoundError` + `DuplicateResourceError` added to `src/core/exceptions.py`
+- `api_health_adapter_timeout_ms` + `app_version` added to `Settings` (Cat 8)
+- `src/api/exception_handlers.py` created — 7 handlers, zero try/except (domain exceptions propagate from routers)
+- `src/api/deps.py` extended: `require_draft_access` (Admin sees all, Reviewer sees own) + `get_routing_service` (DI factory with lazy Slack connect)
+- `get_routing_service` uses deferred imports inside the function body — avoids circular imports at module load time
+- Channel adapter import: `from src.adapters.channel.base import ChannelAdapter` (not `.abstract`) — file is named `base.py`
+- mypy 0, ruff 0 on all 8 new/modified files
+
+---
+
+## 2026-03-01 -- Block 13 API unit tests: health, auth, pagination [Inquisidor]
+
+### Implementation notes
+
+- [GRADUATED] PaginatedResponse[T] PEP 695 syntax, API unit test fixtures pattern, asyncio_mode auto, Docker Desktop requirement → CLAUDE.md
+- Health router tests: patch `src.api.routers.health._check_db` / `_check_redis` at module path
+- Auth path tests: client fixture (no DB override) → non-404 assertion; 422 validation tests don't need DB
+- 3 files: test_health_router.py (9), test_auth_router.py (10), test_pagination.py (14) = 33 tests
+
+---
+
+## 2026-03-02 -- Block 13 test fixes + completion [agent]
+
+### Test fixes
+
+- `RoutingRuleResponse` Pydantic error: `created_at`/`updated_at` None — mock `db.refresh` with `side_effect` that sets timestamps (ORM `server_default=func.now()` not triggered without real DB)
+- `DraftDetailResponse.classification` is inside `email` object, not root — test should assert `body["email"]["classification"]` not `body["classification"]`
+- `scalar_one_or_none()` vs `scalar_one()` mock mismatch: endpoint calls `scalar_one_or_none()` for `func.max()`, test was using `_scalar_one_result()` helper which sets `scalar_one()` — must use `_scalar_result()` which sets `scalar_one_or_none()`
+- Docker Desktop must be running for `import sqlalchemy` on Python 3.14 — engines hang without TCP connectivity
+
+### Block 13 final results
+
+- 110 new API tests, 1477 total (110 new + 1367 existing), 0 regressions
+- mypy 0, ruff 0 on all B13 files (src/api/ + tests/api/)
+- Architecture: zero try/except in routers, no dict[str, Any] in schemas
+
+---
+
+## 2026-03-02 -- Block 14 session start: baseline health check [backend-worker]
+
+### Baseline verified
+
+- Docker: db (postgres:16) + redis:7 healthy on ports 5432/6379
+- pytest: 1477 passed, 58 skipped, 28 warnings — 0 failures, 0 errors
+- mypy: 0 issues in 84 source files
+- ruff: 0 issues in src/
+- 28 RuntimeWarning (coroutine never awaited) — pre-existing, from B12 mock pattern for async Celery task internals; non-blocking

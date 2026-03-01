@@ -38,3 +38,15 @@ class AuthorizationError(Exception):
     Callers: deps.py (require_admin, require_reviewer_or_admin).
     HTTP mapping: 403 Forbidden.
     """
+
+
+class NotFoundError(Exception):
+    """Raised when a requested resource does not exist.
+    HTTP mapping: 404 Not Found.
+    """
+
+
+class DuplicateResourceError(Exception):
+    """Raised when a create operation violates a uniqueness constraint.
+    HTTP mapping: 409 Conflict.
+    """

@@ -139,3 +139,7 @@ Configured in .claude/settings.local.json (do not commit).
 - Deferred import testing: `sys.modules` injection or `patch.dict("sys.modules", ...)` for async functions with `from src.X import Y` inside the body — standard pattern since B10
 - Celery task decorators: `@celery_app.task(bind=True)  # type: ignore[untyped-decorator]` — Celery's `task()` returns untyped; `task.run(...)` bypasses dispatch and is already bound to the task instance (no mock `self` needed)
 - Celery task retry testing: `self.retry.side_effect = celery.exceptions.Retry()` replicates real raise-on-retry; use `pytest.raises(celery.exceptions.Retry)` to verify retry was called
+- PEP 695 generics in Pydantic v2: `class PaginatedResponse[T](BaseModel)` — ruff UP046 rejects `Generic[T]` on py312 target; Pydantic v2 supports PEP 695 natively
+- API unit tests (no DB): `app.dependency_overrides[get_async_db] = lambda: mock_db` + `app.dependency_overrides[get_current_user] = lambda: mock_user`; `_make_empty_db_execute(mock_db, total)` helper for paginated list endpoints (2-call mock: count + scalars)
+- `asyncio_mode = "auto"` in pyproject.toml: `@pytest.mark.asyncio` decorator not needed, but `pytest_asyncio.fixture` still required for async fixtures; `AsyncGenerator[AsyncClient, None]` return type for yielding fixtures
+- Docker Desktop must be running for `import sqlalchemy` on Python 3.14 / Windows — engine creation hangs otherwise even for unit tests (Git Bash OOM kill)

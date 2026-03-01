@@ -1,4 +1,4 @@
-"""Integration tests for auth endpoints: /auth/login, /refresh, /logout, /me.
+"""Integration tests for auth endpoints: /api/v1/auth/login, /refresh, /logout, /me.
 
 All tests require a running PostgreSQL + Redis instance.
 Run with: pytest tests/integration/ --run-integration
@@ -56,7 +56,7 @@ async def _test_reviewer_or_admin(
 
 @pytest.mark.integration
 class TestLoginEndpoint:
-    """POST /auth/login — credential verification, token issuance."""
+    """POST /api/v1/auth/login — credential verification, token issuance."""
 
     @pytest.mark.asyncio
     async def test_login_success(
@@ -66,7 +66,7 @@ class TestLoginEndpoint:
     ) -> None:
         """Valid credentials return 200 with access_token, refresh_token, token_type."""
         response = await async_client.post(
-            "/auth/login",
+            "/api/v1/auth/login",
             json={"username": admin_user.username, "password": "admin_pass_123"},
         )
         assert response.status_code == 200
@@ -87,7 +87,7 @@ class TestLoginEndpoint:
     ) -> None:
         """Wrong password returns 401 with 'Invalid credentials'."""
         response = await async_client.post(
-            "/auth/login",
+            "/api/v1/auth/login",
             json={"username": admin_user.username, "password": "wrong_password"},
         )
         assert response.status_code == 401
@@ -100,7 +100,7 @@ class TestLoginEndpoint:
     ) -> None:
         """Nonexistent username returns 401 — same message as wrong password."""
         response = await async_client.post(
-            "/auth/login",
+            "/api/v1/auth/login",
             json={"username": "nonexistent_user_xyz", "password": "any_password"},
         )
         assert response.status_code == 401
@@ -119,11 +119,11 @@ class TestLoginEndpoint:
         username by inspecting the error message.
         """
         wrong_password_response = await async_client.post(
-            "/auth/login",
+            "/api/v1/auth/login",
             json={"username": admin_user.username, "password": "wrong_password"},
         )
         nonexistent_response = await async_client.post(
-            "/auth/login",
+            "/api/v1/auth/login",
             json={"username": "completely_nonexistent_user", "password": "any_pass"},
         )
         assert wrong_password_response.status_code == 401
@@ -162,7 +162,7 @@ class TestLoginEndpoint:
 
         try:
             response = await async_client.post(
-                "/auth/login",
+                "/api/v1/auth/login",
                 json={
                     "username": inactive_user.username,
                     "password": "inactive_pass_123",
@@ -186,7 +186,7 @@ class TestLoginEndpoint:
 
 @pytest.mark.integration
 class TestRefreshEndpoint:
-    """POST /auth/refresh — token rotation."""
+    """POST /api/v1/auth/refresh — token rotation."""
 
     @pytest.mark.asyncio
     async def test_refresh_returns_new_tokens(
@@ -196,14 +196,14 @@ class TestRefreshEndpoint:
     ) -> None:
         """Valid refresh token returns 200 with new access_token and refresh_token."""
         login_response = await async_client.post(
-            "/auth/login",
+            "/api/v1/auth/login",
             json={"username": admin_user.username, "password": "admin_pass_123"},
         )
         assert login_response.status_code == 200
         refresh_token = login_response.json()["refresh_token"]
 
         response = await async_client.post(
-            "/auth/refresh",
+            "/api/v1/auth/refresh",
             json={"refresh_token": refresh_token},
         )
         assert response.status_code == 200
@@ -219,7 +219,7 @@ class TestRefreshEndpoint:
     ) -> None:
         """Random UUID refresh token returns 401."""
         response = await async_client.post(
-            "/auth/refresh",
+            "/api/v1/auth/refresh",
             json={"refresh_token": str(uuid.uuid4())},
         )
         assert response.status_code == 401
@@ -238,7 +238,7 @@ class TestRefreshEndpoint:
         legitimate holder has already refreshed.
         """
         login_response = await async_client.post(
-            "/auth/login",
+            "/api/v1/auth/login",
             json={"username": admin_user.username, "password": "admin_pass_123"},
         )
         assert login_response.status_code == 200
@@ -246,14 +246,14 @@ class TestRefreshEndpoint:
 
         # First refresh succeeds and rotates the token.
         first_refresh = await async_client.post(
-            "/auth/refresh",
+            "/api/v1/auth/refresh",
             json={"refresh_token": old_refresh_token},
         )
         assert first_refresh.status_code == 200
 
         # Replaying the old token is rejected — token rotation enforced.
         second_refresh = await async_client.post(
-            "/auth/refresh",
+            "/api/v1/auth/refresh",
             json={"refresh_token": old_refresh_token},
         )
         assert second_refresh.status_code == 401
@@ -266,7 +266,7 @@ class TestRefreshEndpoint:
 
 @pytest.mark.integration
 class TestLogoutEndpoint:
-    """POST /auth/logout — token revocation."""
+    """POST /api/v1/auth/logout — token revocation."""
 
     @pytest.mark.asyncio
     async def test_logout_success(
@@ -276,7 +276,7 @@ class TestLogoutEndpoint:
     ) -> None:
         """Authenticated logout returns 204 No Content."""
         login_response = await async_client.post(
-            "/auth/login",
+            "/api/v1/auth/login",
             json={"username": admin_user.username, "password": "admin_pass_123"},
         )
         assert login_response.status_code == 200
@@ -284,7 +284,7 @@ class TestLogoutEndpoint:
         refresh_token = login_response.json()["refresh_token"]
 
         response = await async_client.post(
-            "/auth/logout",
+            "/api/v1/auth/logout",
             json={"refresh_token": refresh_token},
             headers={"Authorization": f"Bearer {access_token}"},
         )
@@ -298,14 +298,14 @@ class TestLogoutEndpoint:
     ) -> None:
         """Logout without Bearer token returns 401."""
         login_response = await async_client.post(
-            "/auth/login",
+            "/api/v1/auth/login",
             json={"username": admin_user.username, "password": "admin_pass_123"},
         )
         assert login_response.status_code == 200
         refresh_token = login_response.json()["refresh_token"]
 
         response = await async_client.post(
-            "/auth/logout",
+            "/api/v1/auth/logout",
             json={"refresh_token": refresh_token},
             # No Authorization header.
         )
@@ -324,7 +324,7 @@ class TestLogoutEndpoint:
         to obtain new access tokens.
         """
         login_response = await async_client.post(
-            "/auth/login",
+            "/api/v1/auth/login",
             json={"username": admin_user.username, "password": "admin_pass_123"},
         )
         assert login_response.status_code == 200
@@ -332,14 +332,14 @@ class TestLogoutEndpoint:
         refresh_token = login_response.json()["refresh_token"]
 
         logout_response = await async_client.post(
-            "/auth/logout",
+            "/api/v1/auth/logout",
             json={"refresh_token": refresh_token},
             headers={"Authorization": f"Bearer {access_token}"},
         )
         assert logout_response.status_code == 204
 
         refresh_response = await async_client.post(
-            "/auth/refresh",
+            "/api/v1/auth/refresh",
             json={"refresh_token": refresh_token},
         )
         assert refresh_response.status_code == 401
@@ -352,7 +352,7 @@ class TestLogoutEndpoint:
 
 @pytest.mark.integration
 class TestMeEndpoint:
-    """GET /auth/me — authenticated user profile."""
+    """GET /api/v1/auth/me — authenticated user profile."""
 
     @pytest.mark.asyncio
     async def test_me_returns_user_info(
@@ -364,7 +364,7 @@ class TestMeEndpoint:
         """Authenticated request returns 200 with user profile fields."""
         access_token, _ = admin_tokens
         response = await async_client.get(
-            "/auth/me",
+            "/api/v1/auth/me",
             headers={"Authorization": f"Bearer {access_token}"},
         )
         assert response.status_code == 200
@@ -383,7 +383,7 @@ class TestMeEndpoint:
         async_client: AsyncClient,
     ) -> None:
         """Request without Authorization header returns 401."""
-        response = await async_client.get("/auth/me")
+        response = await async_client.get("/api/v1/auth/me")
         assert response.status_code == 401
 
     @pytest.mark.asyncio
@@ -412,7 +412,7 @@ class TestMeEndpoint:
         )
 
         response = await async_client.get(
-            "/auth/me",
+            "/api/v1/auth/me",
             headers={"Authorization": f"Bearer {expired_token}"},
         )
         assert response.status_code == 401
@@ -431,7 +431,7 @@ class TestMeEndpoint:
         """
         access_token, _ = admin_tokens
         response = await async_client.get(
-            "/auth/me",
+            "/api/v1/auth/me",
             headers={"Authorization": f"Bearer {access_token}"},
         )
         assert response.status_code == 200

@@ -109,6 +109,10 @@ class Settings(BaseSettings):
     draft_org_prohibited_language: str = Field(default="")  # comma-separated
     draft_generation_retry_max: int = Field(default=2)
 
+    # API (Cat 8: configurable defaults)
+    api_health_adapter_timeout_ms: int = Field(default=200)
+    app_version: str = Field(default="0.1.0")
+
 
 def get_settings() -> Settings:
     return Settings()
