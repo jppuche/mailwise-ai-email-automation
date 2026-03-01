@@ -352,3 +352,31 @@ grep -n "reorder" frontend/src/hooks/useRoutingRules.ts
   El contrato exacto del endpoint determina el parametro de `reorderRules` en el hook.
 - Si B16 creo `StatusIndicator.tsx`, confirmar la ubicacion exacta del archivo
   antes de importarlo en B17. No duplicar el componente.
+
+## Amendments (post-implementation review)
+
+> Added 2026-03-02. Routing rules CRUD already in B13. Analytics endpoints defined in B14 spec.
+> Integration config is read-only (env vars, no DB table).
+
+### Cross-cutting deltas
+
+| ID | Spec assumption | Codebase reality |
+|----|-----------------|-------------------|
+| X5 | Endpoint paths `/api/...` | Prefix is `/api/v1/...` (`src/api/main.py:68-72`) |
+| X8 | `IntegrationConfig` DB model | Does NOT exist — config is env vars via `Settings` |
+
+### Deltas
+
+| # | Category | Spec says | Codebase reality | Resolution |
+|---|----------|-----------|-------------------|------------|
+| 1 | Scope | Routing rules CRUD "under B14" | Already in B13: `src/api/routers/routing_rules.py` | Endpoints exist — no backend work needed |
+| 2 | Endpoint | `PUT /api/integrations/{type}` (update config, X8) | Config is env vars — no PUT. Only GET + POST /test | UI shows read-only config view + test button |
+| 3 | Endpoint | `GET /api/analytics/summary` | B14: `GET /api/v1/analytics/volume` | Use actual names: `volume`, `classification-distribution`, `accuracy`, `routing` |
+| 4 | Endpoint | `GET /api/analytics/timeseries` | No "timeseries" — data in `VolumeResponse.data_points[]` | Volume endpoint IS the time series |
+| 5 | Endpoint | `GET /api/emails/recent-activity` | Does NOT exist | Options: derive from recent emails list, system logs, or add endpoint in B14 |
+| 6 | Field | `LogEntry.stack_trace` | `SystemLog` has no `stack_trace` — only `context: dict[str, str]` | Drop from frontend type |
+| 7 | Type | `ActivityEvent` | No backend model or endpoint | Derive from SystemLog entries or recent Email state changes |
+| 8 | Path | `GET /api/health` (X5) | `GET /api/v1/health` | Fix path |
+| 9 | Type | `AnalyticsSummary`, `AnalyticsTimeseries` | B14: `VolumeResponse`, `ClassificationDistributionResponse`, `AccuracyResponse`, `RoutingResponse` | Use actual types from OpenAPI codegen |
+| 10 | Dependency | B16 components `StatusIndicator`, `ClassificationBadge`, `ConfidenceBadge` | Must be created in B16 first | B16 is a hard dependency |
+| 11 | Type | `RoutingTestResult.matched_rules` | B13 has `RuleTestResponse` — verify shape from schema | Use generated type from OpenAPI |

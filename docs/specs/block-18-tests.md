@@ -575,3 +575,47 @@ grep -rn "from_address\|body_plain\|sender_name" tests/e2e/
 - Consultar Sentinel para revisar que `CELERY_TASK_ALWAYS_EAGER=True` en tests no introduce
   diferencias de comportamiento de seguridad vs modo worker real (especialmente para
   exception handling en top-level handlers).
+
+---
+
+## Amendments (post-implementation review)
+
+> **Date:** 2026-03-02 | **Scope:** Deltas between spec assumptions and codebase after B00-B13 implementation.
+> Cross-cutting deltas referenced by ID — see below.
+
+### Cross-cutting deltas
+
+| ID | Spec assumption | Codebase reality | Source |
+|----|-----------------|-------------------|--------|
+| X1 | `Email.received_at` | `Email.date` | `src/models/email.py:105` |
+| X2 | `Email.from_address` | `Email.sender_email` | `src/models/email.py:98` |
+| X3 | `Draft.body` | `Draft.content` | `src/models/draft.py:47` |
+| X4 | `User.email` | `User.username` | `src/models/user.py:42` |
+| X6 | `EmailAccount` model | Does NOT exist — `Email.account` is `str` | `src/models/email.py:96` |
+| X7 | `PipelineRunRecord` model | Does NOT exist anywhere in ORM | grep across `src/models/` |
+
+### Delta table
+
+| # | Category | Spec says | Codebase reality | Resolution |
+|---|----------|-----------|-------------------|------------|
+| 1 | Model | `PipelineRunRecord` used for E2E assertions (X7) | No such model exists | Verify pipeline via Email state transitions + child records (`ClassificationResult`, `RoutingAction`, `Draft`) |
+| 2 | Factory | `EmailFactory.account_id: UUID` | `Email.account: str` (X6) | Use `account: str` in factory |
+| 3 | Factory | `EmailFactory.gmail_message_id` | `Email.provider_message_id` (`src/models/email.py:101`) | Rename to `provider_message_id` |
+| 4 | Factory | `EmailFactory.from_address` (X2) | `Email.sender_email` | Rename to `sender_email` |
+| 5 | Factory | `EmailFactory.received_at` (X1) | `Email.date` | Rename to `date` |
+| 6 | Factory | `ClassificationResultFactory.confidence: float` | `ClassificationConfidence` enum: `HIGH`/`LOW` (`src/models/classification.py:16`) | Use enum values, not float |
+| 7 | Factory | `ClassificationResultFactory.*_category_id: int` | Type: `UUID` (all FK columns are UUID) | Use `uuid.UUID` |
+| 8 | Factory | `RoutingActionFactory.generate_draft: bool` | Field does NOT exist on `RoutingAction` — it's in `RoutingRule.actions` JSONB (`src/models/routing.py:62`) | Remove from factory |
+| 9 | Factory | `RoutingActionFactory.crm_sync: bool` | Same — not on `RoutingAction` model | Remove from factory |
+| 10 | Factory | `DraftFactory.body` (X3) | `Draft.content` | Rename to `content` |
+| 11 | Factory | `UserFactory.email` (X4) | `User.username` | Rename to `username` |
+| 12 | Factory | `UserFactory.hashed_password` via `AuthService.hash_password()` | Auth uses `bcrypt` directly — passlib incompatible with bcrypt>=4.2 on Python 3.14 (`src/services/auth_service.py`) | Use `bcrypt.hashpw()` |
+| 13 | Dep | `EmailAccount` model referenced in factories/tests (X6) | Does NOT exist | Remove all references — use `Email.account: str` |
+| 14 | Type | `CRMSyncResult` | Actual: `CRMSyncTaskResult` (`src/tasks/result_types.py:46`) | Use actual name |
+| 15 | Type | `DraftResult` | Actual: `DraftTaskResult` (`src/tasks/result_types.py:59`) | Use actual name |
+| 16 | Import | `from src.tasks import ingest_task, ...` | `src/tasks/__init__.py` is empty — tasks live in individual modules | Import from `src.tasks.ingestion_task`, `src.tasks.classify_task`, etc. |
+| 17 | Mock | `MockGmailAdapter.test_connection()` returns `bool` | All 4 adapters return `ConnectionTestResult` dataclass (`src/adapters/*/base.py`) | Match real return type |
+| 18 | Mock | `MockLLMAdapter.classify()` shown as sync | Actual `classify()` is `async` (`src/adapters/llm/base.py`) | Use `async def` |
+| 19 | Pattern | `ingest_task(str(email.id))` — direct call | Celery tasks: use `task.run()` for testing (bypasses dispatch, per CLAUDE.md learned pattern) | Use `task.run()` |
+| 20 | State | `DRAFT_REJECTED` email state | No such `EmailState`; `DraftStatus.REJECTED` is on Draft model (`src/models/draft.py:20`) | Email stays `DRAFT_GENERATED`; assert `draft.status == DraftStatus.REJECTED` |
+| 21 | Mock | Mock adapters as simple classes | Real adapters use `_ensure_connected()` + `assert self._client is not None` pattern | Use `connected_adapter` fixture pattern: set `_connected = True` directly (per B06 learned pattern) |

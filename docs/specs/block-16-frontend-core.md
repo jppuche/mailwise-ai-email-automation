@@ -264,3 +264,37 @@ grep -rn ": any\|as any\|<any>" frontend/src/pages/ frontend/src/components/Emai
 
 Ambos comandos deben producir resultados esperados (primero: imports presentes;
 segundo: sin matches) antes de marcar el bloque como COMPLETO.
+
+## Amendments (post-implementation review)
+
+> Added 2026-03-02. Backend API (B13) and config endpoints (B14 spec) are the source of truth.
+> Frontend consumes generated types from OpenAPI — field names come from backend schemas.
+
+### Cross-cutting deltas
+
+| ID | Spec assumption | Codebase reality |
+|----|-----------------|-------------------|
+| X1 | `Email.received_at` | Field is `Email.date` (`src/models/email.py:105`) |
+| X2 | `Email.from_address` | Field is `Email.sender_email` (`src/models/email.py:98`) |
+| X3 | `Draft.body` | Field is `Draft.content` (`src/models/draft.py:47`) |
+| X5 | Endpoint paths `/api/...` | Prefix is `/api/v1/...` (`src/api/main.py:68-72`) |
+| X8 | `IntegrationConfig` DB model | Does NOT exist — config is env vars via `Settings` |
+
+### Deltas
+
+| # | Category | Spec says | Codebase reality | Resolution |
+|---|----------|-----------|-------------------|------------|
+| 1 | Endpoint | `POST /api/emails/{id}/reroute` | Does NOT exist — only `retry` and `reclassify` (`src/api/routers/emails.py`) | Use `retry` or `reclassify` |
+| 2 | Endpoint | `PUT /api/drafts/{id}` (edit body) | Does NOT exist (B13 has approve/reject/reassign only) | Decision needed: add in B14, or client-side edit before approve |
+| 3 | Endpoint | `GET /api/review-queue` | Does NOT exist | Compose from: `GET /api/v1/emails` (filtered) + `GET /api/v1/drafts?status=pending` |
+| 4 | Endpoint | `GET /api/categories?layer=action` (query param) | B14: separate paths `/api/v1/categories/actions` and `/api/v1/categories/types` | Two API calls, one per layer |
+| 5 | Endpoint | `GET /api/few-shot-examples` | B14: `GET /api/v1/classification/examples` | Use actual path |
+| 6 | Endpoint | `GET /api/classification-config` + `PUT` | Don't exist — LLM config via integrations endpoints | Use `GET /api/v1/integrations/llm` |
+| 7 | Field | `Email.from_address` (X2) | `Email.sender_email` | Use generated type field name |
+| 8 | Field | `Email.received_at` (X1) | `Email.date` | Use generated type field name |
+| 9 | Field | `Draft.body` (X3) | `Draft.content` | Use `content` in generated types |
+| 10 | Model | `Email.draft_id` FK | No FK from Email to Draft; `Draft.email_id` FKs to Email | Query drafts by `email_id`, not from Email |
+| 11 | Model | Category `layer` discriminator field | Separate tables: `ActionCategory`, `TypeCategory` | No `layer` field — separate API calls per table |
+| 12 | Model | `Email.classification` / `Email.routing_actions` inline | Separate tables, composed in `EmailDetailResponse` | Use detail response shape from OpenAPI codegen |
+| 13 | Path | All paths `/api/...` (X5) | Prefix: `/api/v1/...` | All frontend API calls use `/api/v1/` |
+| 14 | Type | `ReviewQueueItem.confidence: 'high' \| 'low'` | Matches `ClassificationConfidence` enum — confirmed | No change needed |

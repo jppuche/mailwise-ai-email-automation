@@ -770,3 +770,29 @@ grep -rn "localStorage.setItem\|sessionStorage.setItem" src/contexts/AuthContext
 - Consultar Sentinel para revisar la estrategia de almacenamiento del access token en
   `useRef` dentro de `AuthContext`: confirmar que este patron efectivamente previene XSS
   vs localStorage, y que la referencia no es accesible desde la consola del browser.
+
+## Amendments (post-implementation review)
+
+> Added 2026-03-02. Backend auth endpoints (B02/B13) are fully implemented. These deltas
+> reflect the actual auth schema and flow as built.
+
+### Cross-cutting deltas
+
+| ID | Spec assumption | Codebase reality |
+|----|-----------------|-------------------|
+| X4 | `User.email` | Field is `User.username` (`src/models/user.py:42`) |
+| X5 | Endpoint paths `/api/...` | Prefix is `/api/v1/...` (`src/api/main.py:68-72`) |
+
+### Deltas
+
+| # | Category | Spec says | Codebase reality | Resolution |
+|---|----------|-----------|-------------------|------------|
+| 1 | Schema | `LoginRequest: {email, password}` (X4) | `LoginRequest: {username, password}` (`src/api/schemas/auth.py:14`) | Frontend form label: "Username", not "Email" |
+| 2 | Schema | Response: `{access_token, token_type, user: UserInfo, expires_in}` | `TokenResponse: {access_token, refresh_token, token_type}` — no `user`, no `expires_in` | Fetch user via `GET /api/v1/auth/me` after login |
+| 3 | Auth flow | Refresh token in httpOnly cookie | Actual: refresh token in response body, sent back via `RefreshRequest.refresh_token` | Store in memory (no cookie mechanism exists) |
+| 4 | Auth flow | `POST /api/auth/logout` clears refresh cookie | Requires valid access token; refresh token invalidated server-side in Redis | Send `Authorization: Bearer` header on logout |
+| 5 | Model | `User.email` in UI (X4) | ORM: `User.username` | Display `username` everywhere |
+| 6 | Schema | `UserResponse: {id, email, role, is_active}` | `UserResponse: {id, username, role, is_active}` (`src/api/schemas/auth.py:59`) | Use `username` field |
+| 7 | Enum | Roles: `Admin`, `Reviewer` (PascalCase) | `UserRole` values: `"admin"`, `"reviewer"` (lowercase) | Frontend role checks use lowercase strings |
+| 8 | Path | `POST /api/auth/login` (X5) | `POST /api/v1/auth/login` | Use `/api/v1/` prefix for all endpoints |
+| 9 | Security | httpOnly cookie for CSRF protection | No cookie mechanism — both tokens in response body | CSRF not applicable without cookies; XSS mitigation via `useRef` for access token remains valid |

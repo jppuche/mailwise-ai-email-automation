@@ -707,3 +707,44 @@ docker compose up -d && sleep 30 && docker compose logs | \
 - Consultar Inquisidor para confirmar el patron de test de paridad `.env.example` vs
   `Settings`: parsear `config.py` con `ast` vs instanciar `Settings` con env vars vacias
   y capturar `ValidationError` — cual da errores mas accionables para el developer.
+
+---
+
+## Amendments (post-implementation review)
+
+> **Date:** 2026-03-02 | **Scope:** Deltas between spec assumptions and codebase after B00-B13 implementation.
+> Cross-cutting deltas referenced by ID — see below.
+
+### Cross-cutting deltas
+
+| ID | Spec assumption | Codebase reality | Source |
+|----|-----------------|-------------------|--------|
+| X1 | `Email.received_at` | `Email.date` | `src/models/email.py:105` |
+| X5 | Endpoint paths `/api/...` | Prefix is `/api/v1/...` | `src/api/main.py:68-72` |
+| X6 | `EmailAccount` model | Does NOT exist — `Email.account` is `str` | `src/models/email.py:96` |
+
+### Delta table
+
+| # | Category | Spec says | Codebase reality | Resolution |
+|---|----------|-----------|-------------------|------------|
+| 1 | File | `src/core/logging.py`, `src/core/correlation.py` | Don't exist yet | Confirmed B19 deliverables — no pre-existing code to conflict with |
+| 2 | Field | `rule_id: int` in PII redaction policy | `RoutingAction.rule_id: UUID \| None` (`src/models/routing.py:85`) | Fix type to `UUID` in docs |
+| 3 | Env var | `API_CORS_ALLOWED_ORIGINS` | Settings field: `cors_origins: list[str]` → env var `CORS_ORIGINS` (`src/core/config.py:25`) | Use `CORS_ORIGINS` |
+| 4 | Env var | `JWT_ACCESS_TOKEN_TTL_SECONDS` | Settings: `jwt_access_ttl_minutes = 15` (unit: minutes, not seconds) (`src/core/config.py:36`) | Use `JWT_ACCESS_TTL_MINUTES` |
+| 5 | Env var | `JWT_REFRESH_TOKEN_TTL_SECONDS` | Settings: `jwt_refresh_ttl_days = 7` (unit: days, not seconds) (`src/core/config.py:37`) | Use `JWT_REFRESH_TTL_DAYS` |
+| 6 | Env var | `LLM_CLASSIFY_MODEL` | Settings: `llm_model_classify` → env `LLM_MODEL_CLASSIFY` (`src/core/config.py:52`) | Fix name |
+| 7 | Env var | `LLM_DRAFT_MODEL` | Settings: `llm_model_draft` → env `LLM_MODEL_DRAFT` (`src/core/config.py:53`) | Fix name |
+| 8 | Env var | `LLM_CLASSIFY_TEMPERATURE` | Settings: `llm_temperature_classify` → env `LLM_TEMPERATURE_CLASSIFY` (`src/core/config.py:54`) | Fix name |
+| 9 | Env var | `LLM_DRAFT_TEMPERATURE` | Settings: `llm_temperature_draft` → env `LLM_TEMPERATURE_DRAFT` (`src/core/config.py:55`) | Fix name |
+| 10 | Env var | `LLM_API_KEY` (single key) | Separate: `openai_api_key`, `anthropic_api_key` (`src/core/config.py:48-49`) | Document both: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` |
+| 11 | Env var | `HUBSPOT_API_TOKEN` | Settings: `hubspot_access_token` → env `HUBSPOT_ACCESS_TOKEN` (`src/core/config.py:82`) | Fix name |
+| 12 | Env var | `LLM_BODY_TRUNCATION_CHARS` | Settings: `max_body_length` → env `MAX_BODY_LENGTH` (`src/core/config.py:101`) | Fix name |
+| 13 | Env var | `LLM_SNIPPET_LENGTH` | Settings: `snippet_length` → env `SNIPPET_LENGTH` (`src/core/config.py:102`) | Fix name |
+| 14 | Env var | `PIPELINE_POLL_INTERVAL_SECONDS` | Settings: `polling_interval_seconds` → env `POLLING_INTERVAL_SECONDS` (`src/core/config.py:110`) | Fix name |
+| 15 | Env var | `PIPELINE_*_MAX_RETRIES` (per-task) | Single `celery_max_retries: int = 3` — all tasks share (`src/core/config.py:107`) | Document single `CELERY_MAX_RETRIES` setting |
+| 16 | Env var | `ANALYTICS_CSV_CHUNK_SIZE` default `100` | Settings: `analytics_csv_chunk_size = 1000` (`src/core/config.py:120`) | Fix default to `1000` |
+| 17 | Field | `account_id` in PII redaction policy (X6) | `Email.account: str` (not UUID FK) | Fix to `account: str` |
+| 18 | CLI | `src/cli create-admin` command | `src/cli` module does NOT exist | Mark as B19 deliverable or document manual alternative via Python REPL |
+| 19 | Health | `curl ... /api/health` (X5) | `GET /api/v1/health` | Fix path to `/api/v1/health` |
+| 20 | Term | `EmailAccount` model referenced (X6) | No such model — `Email.account` is a plain `str` | Fix terminology throughout |
+| 21 | Env vars | Only ~25 vars documented in spec | 50+ Settings fields exist — missing vars include: `GMAIL_REDIRECT_URI`, `GMAIL_MAX_RESULTS`, `SLACK_SIGNING_SECRET`, `CHANNEL_*` (4 vars), `ROUTING_*` (3 vars), `HUBSPOT_*` (6 vars), `INGESTION_LOCK_*` (2 vars), `PIPELINE_SCHEDULER_*` (2 vars), `CLASSIFY_*` (3 vars), `DRAFT_*` (5 vars), `LLM_*_MAX_TOKENS` (2 vars), `LLM_BASE_URL`, `DATA_RETENTION_DAYS` | Add ALL Settings fields to `.env.example` during B19 implementation |

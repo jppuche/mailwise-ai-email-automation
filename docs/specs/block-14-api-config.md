@@ -894,3 +894,42 @@ grep -n "yield" src/services/analytics_service.py
   `classify_model` y `draft_model` como strings libres) no puede usarse para redirigir
   las llamadas LLM a endpoints arbitrarios controlados por el atacante. El `integration_service`
   debe validar contra una lista de modelos permitidos configurada en `settings`.
+
+## Amendments (post-implementation review)
+
+> Added 2026-03-02. Cross-references use IDs from the shared delta table below.
+> Reference: `docs/handoffs/block-14-context.md` for full B14 delta analysis.
+> B14 schemas (`src/api/schemas/{categories,analytics,integrations,logs}.py`) already partially adapted.
+
+### Cross-cutting deltas
+
+| ID | Spec assumption | Codebase reality |
+|----|-----------------|-------------------|
+| X1 | `Email.received_at` | Field is `Email.date` (`src/models/email.py:105`) |
+| X5 | Endpoint paths `/api/...` | Prefix is `/api/v1/...` (`src/api/main.py:68-72`) |
+| X8 | `IntegrationConfig` DB model | Does NOT exist — config is env vars via `Settings` |
+
+### Deltas
+
+| # | Category | Spec says | Codebase reality | Resolution |
+|---|----------|-----------|-------------------|------------|
+| 1 | Dependency | `EmailAction` model (Block 1) | No such model exists | Remove reference |
+| 2 | Dependency | `IntegrationConfig` model (X8) | Does NOT exist — config is env vars in `Settings` | Read-only: GET reads `Settings`, POST /test calls adapters. All `*Update` schemas and PUT endpoints dropped |
+| 3 | Dependency | `require_reviewer` | Actual: `require_reviewer_or_admin` (`src/api/deps.py`) | Use actual name |
+| 4 | Schema | `ActionCategoryBase.color_hex` | ORM has NO `color_hex` column | **Already resolved** in created schema |
+| 5 | Schema | `FeedbackItem.reviewer_note` | `ClassificationFeedback` has no such field | **Already resolved** in created schema |
+| 6 | Schema | `FeedbackItem.created_at` | Actual timestamp: `corrected_at` | **Already resolved** — uses `corrected_at` |
+| 7 | Schema | `FeedbackItem.original_action: str` (slug) | ORM: `original_action_id: UUID` FK | Service JOINs to resolve slug for response |
+| 8 | Pattern | `DeletedResponse(deleted=True)` | B13 pattern: DELETE returns 204 No Content | Use `status_code=204, response_class=Response` |
+| 9 | Schema | `DateRangeFilter.timezone: str` | **Already resolved** — created schema has no `timezone` field | Dropped — server uses UTC |
+| 10 | Schema | `IntegrationStatus` generic type | **Already resolved** — per-adapter typed configs: `EmailIntegrationConfig`, `ChannelIntegrationConfig`, etc. | Each adapter has own typed response |
+| 11 | Schema | `LogFilter` Pydantic model | **Already resolved** — `logs.py` uses inline `Query()` params | No separate `LogFilter` model |
+| 12 | Model | `FewShotExample`/`SystemLog` "don't exist" (Block 1) | **Already resolved** — created in `src/models/{few_shot,system_log}.py` | Alembic migration still needed |
+| 13 | Pattern | `category_service.py` uses `db.commit()`/`db.rollback()` | B13 pattern: DI session manages commit | Use `flush()` + `refresh()` — never `commit()` in services |
+| 14 | Pattern | Router delete has try/except for `CategoryInUseError` | B13: zero try/except in routers. Handler `category_in_use_handler` exists in `exception_handlers.py` but NOT registered in `main.py` | Register handler in `main.py` during B14 |
+| 15 | Exception | `DatabaseError`, `SlugConflictError`, `ConfigurationMissingError` | Not defined. `DuplicateResourceError` exists for slug conflicts | Use existing exceptions; add only if needed |
+| 16 | Field | `Email.received_at` in analytics queries (X1) | `Email.date` | Use `Email.date` in all queries |
+| 17 | Code | CSV export: `classification.was_overridden` | No such field on `ClassificationResult` | Derive from `ClassificationFeedback` existence via LEFT JOIN |
+| 18 | Code | `IntegrationService._load_config()` reads from DB | No DB table (X8) | Read from `get_settings()` directly |
+| 19 | Path | Endpoints under `/api/categories/...` (X5) | Prefix: `/api/v1/` | Mount under `/api/v1/categories/...` |
+| 20 | Schema | No `is_fallback` in spec's `ActionCategoryCreate` | **Already resolved** — created schema includes `is_fallback: bool = False` (matches ORM) | Correct |
