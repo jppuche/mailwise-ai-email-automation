@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import axios from "axios";
-import type { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from "axios";
+import type { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
 describe("API Client interceptors", () => {
   let client: AxiosInstance;

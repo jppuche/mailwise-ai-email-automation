@@ -277,6 +277,24 @@
 - 139 new tests: 46 categories, 44 integrations, 33 analytics, 16 logs
 - 1616 total tests, 0 regressions, mypy 0 errors, ruff 0 violations
 
+## 2026-03-02 -- Block 16: Frontend Core — Email Browser, Review Queue, Classification Config
+
+- 3 API modules: `api/emails.ts`, `api/drafts.ts`, `api/categories.ts` — 25 typed functions, zero `any`
+- 4 React Query hooks: `useEmails`, `useDrafts`, `useReviewQueue`, `useCategories` (+ `useCategoryMutations`)
+- 7 components: `ClassificationBadge`, `ConfidenceBadge`, `FilterBar`, `EmailTable`, `DraftReview`, `CategoryList`, `FewShotEditor`
+- 4 pages: `EmailBrowserPage`, `EmailDetailPage`, `ReviewQueuePage`, `ClassificationConfigPage` (placeholder replaced)
+- Router: 3 placeholders replaced with lazy-loaded real pages + Suspense wrappers
+- Types expanded: `api.ts` now has 40+ schemas from B13/B14; `PaginatedResponse<T>` as standalone generic
+- Deps: @tanstack/react-query (over SWR — optimistic mutations + devtools), @dnd-kit/core+sortable+utilities
+- Review queue composed from two API calls (emails + drafts) — no dedicated endpoint; low-confidence filter is client-side
+- LLM config section read-only (handoff delta #6); no inline draft editing (handoff delta #2)
+- EmailState API values are lowercase (values_callable enforced) — agents defaulted to UPPERCASE, caught by TypeScript
+- Hook tests require `.tsx` extension when JSX is used in wrapper (QueryClientProvider)
+- `createWrapper()` factory with `retry: false` prevents TanStack Query retries in tests
+- dnd-kit drag not testable in jsdom — CategoryList tests focus on CRUD + toggle
+- 115 new tests: 37 hook tests + 78 component/page tests; 142 total frontend tests (up from 27)
+- Quality gates: tsc 0, ESLint 0 errors (3 pre-existing warnings), vite build 116KB gzip, 142/142 pass
+
 ## 2026-03-02 -- Block 13: REST API Core
 
 - 4 routers: health, emails, routing-rules, drafts — all under `/api/v1/` prefix

@@ -47,31 +47,10 @@ Compound learning: each session reads this file before working.
 
 ## 2026-03-02 -- Block 14: Analytics & Admin Endpoints [Lorekeeper]
 
-### Implementation notes
-
-- `IntegrationService` returns `dict[str, object]`; router uses `cast(int, config["key"])` — `int(config["key"])` fails mypy `call-overload` on `object` type
-- `ClassificationFeedback` feedback query: 4-way JOIN with `ActionCategory.__table__.alias("orig_action")` — SQLAlchemy Core alias for self-referential category FK resolution; no `# type: ignore[attr-defined]` needed
-- `func.count().label("count")` → mypy types `row.count` as `Callable`; fix: `cast(int, row._mapping["count"])`
-- `categories_router` and `classification_router` exported from same file (`categories.py`) — two routers, two prefixes, one module
-- `StreamingResponse` return: no `response_model` needed on CSV export endpoint
-- CSV generator test: `MagicMock(return_value=_csv_gen())` NOT `AsyncMock` — `stream_csv_export` is sync method returning async generator, not a coroutine
-- Module-level service singletons (`_analytics_service`, `_integration_service`, `_category_service`): patch at `src.api.routers.<module>.<singleton_name>` — same pattern as `_routing_service` in B13
-- `ReorderRequest.ordered_ids` validator rejects empty list at Pydantic level → 422 without touching service
-- `TestAuthGuards` loop pattern: single test iterates all endpoint paths of a router to assert reviewer-denied invariant compactly
-- `MagicMock(spec=SystemLog)` required for logs tests — spec-less mock exposes arbitrary attributes silently
-- `list[object]` annotation required when passing `list[MagicMock]` to functions typed as `list[object]` — mypy arg-type strictness
-- `email_id=None` on mock log: set explicitly after construction (`log.email_id = None`) — MagicMock spec may return MagicMock for unset attrs
-- `DateRangeFilter` validator uses `info.data` narrowing via `hasattr` guard — no `type: ignore[union-attr]` needed (mypy narrows through hasattr)
-- `FewShotExample`: `action_slug`/`type_slug` stored as strings, not FK UUIDs — intentional (few-shot examples are text templates, not relational references)
-- `SystemLog`: `email_id` is NOT a FK (logs may outlive emails); `context: dict[str, str]` not `dict[str, Any]`
-- `CategoryInUseError` response body: `{"error": "category_in_use", "affected_email_count": N}` — confirmed from exception_handlers.py
-
-### Block 14 final results
-
-- 139 new tests (46 categories + 44 integrations + 33 analytics + 16 logs), 1616 total
-- mypy 0, ruff 0 on all B14 files
-- Architecture: zero try/except in routers, no dict[str, Any] in schemas, no credentials in integration responses
-- Spec deltas applied: IntegrationConfig dropped, PUT integrations dropped, color_hex dropped, reviewer_note dropped, DELETE returns 204
+- `cast(int, row._mapping["count"])` required — `func.count().label()` typed as `Callable` by mypy
+- `FewShotExample`: `action_slug`/`type_slug` are strings (not FK UUIDs) — text templates, not relational refs
+- `SystemLog.email_id` is NOT a FK (logs may outlive emails); `context: dict[str, str]` not `dict[str, Any]`
+- 139 new tests, 1616 total; mypy 0, ruff 0
 
 ---
 
@@ -120,5 +99,25 @@ Compound learning: each session reads this file before working.
 
 - 96 deltas across 6 specs (B14:20, B15:9, B16:14, B17:11, B18:21, B19:21)
 - Commit: `2824e60`
+
+---
+
+## 2026-03-02 -- Block 16: Frontend Core — Email Browser, Review Queue, Classification Config [Lorekeeper]
+
+### Key discoveries
+
+- `EmailState` API values are lowercase (values_callable enforced on backend) — agents defaulted to UPPERCASE; TypeScript caught it at compile time
+- Hook CWD issue recurred: `cd frontend && npm install` permanently changes Bash CWD; hook stubs needed again (same fix as B15)
+- TanStack Query wrapper required for hook tests: `createWrapper()` factory with `retry: false` prevents cache bleed and retries
+- `.tsx` extension required for any test file that renders JSX (even just as QueryClientProvider wrapper) — esbuild rejects JSX in `.ts`
+- dnd-kit drag not testable in jsdom — CategoryList tests focus on CRUD + toggle; drag tested manually
+- `vi.useFakeTimers({ shouldAdvanceTime: true })` required for `userEvent` debounce tests — plain `useFakeTimers()` causes 5000ms timeouts
+- `screen.getByRole("dialog")` needed to scope assertions when text appears in both list item and modal
+
+### Block 16 final results
+
+- 115 new tests (37 hook + 78 component/page), 142 total frontend (up from 27 B15)
+- tsc 0 errors, ESLint 0 errors, vite build 116KB gzip, 142/142 pass
+- Architecture: 0 `any`, 0 manual type duplication, all types from generated schema
 
 ---

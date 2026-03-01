@@ -12,11 +12,12 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Block 15: Frontend SPA — Auth & Email List (auth + shell complete, email list pending)
-- [ ] Blocks 16-19 (pending)
+- [ ] Blocks 17-19: Routing Rules & User Mgmt, E2E Tests, Observability (pending)
 
 ## Recently Completed
 
+- [x] Block 16: Frontend Core — Email Browser, Review Queue, Classification Config (4 pages, 7 components, 4 hooks, 25 API fns, 142 tests total)
+- [x] Block 15: Frontend SPA — Auth & Email List (auth + shell + 27 tests; email list delivered in B16)
 - [x] Block 14: Analytics & Admin Endpoints (4 routers, 26 endpoints, 3 services, 139 tests, 1616 total)
 - [x] Block 13: API Endpoints (4 routers, 22 endpoints, exception handlers, 110 tests, 1477 total)
 - [x] Block 12: Pipeline & Scheduler (Celery 5-task chain, APScheduler, Redis lock, 172 tests, 1367 total)
@@ -56,5 +57,4 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 | honnibal/contract-docstrings | Installed | Sentinel | Adapter boundary contracts |
 | honnibal/pre-mortem | Installed | Sentinel | Pipeline fragility analysis |
 | honnibal/alignment-chart | Installed | Inquisidor | Function/test categorization |
-| honnibal/concept-analysis | Installed | Lorekeeper | Domain glossary, naming consistency |
-<!-- Rejected: PostgreSQL MCP, SAST MCP, HubSpot MCP (deferred), Slack MCP, laurigates skill -->
+| honnibal/concept-analysis | Installed | Lorekeeper | Domain glossary, naming consistency | <!-- Rejected: PostgreSQL MCP, SAST MCP, HubSpot MCP (deferred), Slack MCP, laurigates skill -->

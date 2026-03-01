@@ -8,6 +8,11 @@ import LoginPage from "@/pages/LoginPage";
 import OverviewPage from "@/pages/OverviewPage";
 import NotFoundPage from "@/pages/NotFoundPage";
 
+// Lazy loading para paginas — reduce bundle inicial y mejora TTI
+const EmailBrowserPage = React.lazy(() => import("@/pages/EmailBrowserPage"));
+const EmailDetailPage = React.lazy(() => import("@/pages/EmailDetailPage"));
+const ReviewQueuePage = React.lazy(() => import("@/pages/ReviewQueuePage"));
+
 // Lazy loading para paginas admin-only (reducir bundle inicial de Reviewer)
 const ClassificationConfigPage = React.lazy(
   () => import("@/pages/ClassificationConfigPage"),
@@ -42,9 +47,30 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { path: "/",           element: <OverviewPage /> },
-          { path: "/emails",     element: <Placeholder label="Email Browser" /> },
-          { path: "/emails/:id", element: <Placeholder label="Email Detail" /> },
-          { path: "/review",     element: <Placeholder label="Review Queue" /> },
+          {
+            path: "/emails",
+            element: (
+              <React.Suspense fallback={<div className="page-placeholder">Loading...</div>}>
+                <EmailBrowserPage />
+              </React.Suspense>
+            ),
+          },
+          {
+            path: "/emails/:id",
+            element: (
+              <React.Suspense fallback={<div className="page-placeholder">Loading...</div>}>
+                <EmailDetailPage />
+              </React.Suspense>
+            ),
+          },
+          {
+            path: "/review",
+            element: (
+              <React.Suspense fallback={<div className="page-placeholder">Loading...</div>}>
+                <ReviewQueuePage />
+              </React.Suspense>
+            ),
+          },
           { path: "/routing",    element: <Placeholder label="Routing Rules" /> },
           { path: "/analytics",  element: <Placeholder label="Analytics" /> },
         ],
