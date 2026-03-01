@@ -1,0 +1,33 @@
+# Production overrides — use with: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+services:
+  api:
+    restart: unless-stopped
+    environment:
+      - LOG_FORMAT=json
+      - LOG_LEVEL=INFO
+
+  worker:
+    restart: unless-stopped
+    environment:
+      - LOG_FORMAT=json
+      - LOG_LEVEL=INFO
+
+  scheduler:
+    restart: unless-stopped
+    environment:
+      - LOG_FORMAT=json
+      - LOG_LEVEL=INFO
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      target: production
+    restart: unless-stopped
+
+  db:
+    restart: unless-stopped
+
+  redis:
+    restart: unless-stopped
+    command: redis-server --appendonly yes

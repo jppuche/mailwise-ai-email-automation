@@ -45,3 +45,17 @@ def _create_celery_app() -> Celery:
 
 
 celery_app = _create_celery_app()
+
+from celery.signals import worker_init  # type: ignore[attr-defined]
+
+
+@worker_init.connect  # type: ignore[misc]
+def _on_worker_init(**kwargs: object) -> None:
+    """Configure structured logging when the Celery worker boots."""
+    from src.core.logging import configure_logging
+
+    settings = get_settings()
+    configure_logging(
+        log_level=settings.log_level,
+        log_format=settings.log_format,
+    )

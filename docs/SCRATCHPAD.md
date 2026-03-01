@@ -31,8 +31,6 @@ Compound learning: each session reads this file before working.
 ### Open questions — unresolved (carry to development blocks)
 
 - [inquisidor] B16: `confidence` in `ReviewQueueItem` — `'high' | 'low'` or float 0.0–1.0?
-- [RESOLVED B17] `PUT /api/routing-rules/reorder` — `{ ordered_ids: string[] }` (index 0 → priority 1)
-- [RESOLVED B18] `SQLAlchemyModelFactory` → plain `factory.Factory` + manual DB insert; DB isolation via UUID-suffixed identifiers + cleanup
 - [sentinel] B18-B19: `CELERY_TASK_ALWAYS_EAGER` security diffs, `PiiSanitizingFilter` false positives, `.env.example` parity
 
 ---
@@ -45,77 +43,67 @@ Compound learning: each session reads this file before working.
 
 ---
 
-## 2026-03-02 -- Blocks 14-15 (consolidated) [Lorekeeper]
+## 2026-03-02 -- Blocks 14-17 (consolidated) [Lorekeeper]
 
 - B14: `cast(int, row._mapping["count"])` for `func.count().label()`; `FewShotExample` slugs are strings not FKs; `SystemLog.email_id` NOT a FK
 - B15: `configureClient` pattern avoids circular dep AuthContext↔API client; refresh interceptor queues 401s; `getTokenExpSeconds()` decodes JWT `exp`
+- B16: `EmailState` API values UPPERCASE; `.tsx` extension required for JSX test files; `vi.useFakeTimers({ shouldAdvanceTime: true })` for debounce tests
+- B17: recharts cannot resolve CSS vars — hex values only in Chart.tsx; `vi.stubGlobal("URL",...)` breaks jsdom — use `Object.defineProperty` instead
 - Spec amendments B14-B19: 96 deltas across 6 specs (commit `2824e60`)
-
----
-
-## 2026-03-02 -- Block 16: Frontend Core — Email Browser, Review Queue, Classification Config [Lorekeeper]
-
-### Key discoveries
-
-- `EmailState` API values are UPPERCASE (`CLASSIFIED`, `ROUTED`, etc.) — `values_callable` stores `.value` in PostgreSQL. Other enums (DraftStatus, ClassificationConfidence) use lowercase.
-- Hook CWD issue recurred: `cd frontend && npm install` permanently changes Bash CWD; hook stubs needed again (same fix as B15)
-- TanStack Query wrapper required for hook tests: `createWrapper()` factory with `retry: false` prevents cache bleed and retries
-- `.tsx` extension required for any test file that renders JSX (even just as QueryClientProvider wrapper) — esbuild rejects JSX in `.ts`
-- dnd-kit drag not testable in jsdom — CategoryList tests focus on CRUD + toggle; drag tested manually
-- `vi.useFakeTimers({ shouldAdvanceTime: true })` required for `userEvent` debounce tests — plain `useFakeTimers()` causes 5000ms timeouts
-- `screen.getByRole("dialog")` needed to scope assertions when text appears in both list item and modal
-
-### Block 16 final results
-
-- 115 new tests (37 hook + 78 component/page), 142 total frontend (up from 27 B15)
-- tsc 0 errors, ESLint 0 errors, vite build 116KB gzip, 142/142 pass
-- Architecture: 0 `any`, 0 manual type duplication, all types from generated schema
-
----
-
-## 2026-03-02 -- Block 17: FE Remaining — Routing, Analytics, Integrations, Overview, Logs [agent]
-
-### What was delivered
-
-- 5 API modules (routing-rules, analytics, health, integrations, logs), 5 hooks, 10 components, 2 new pages + 3 stub replacements + router update
-- 1081 CSS lines appended (13 BEM blocks), 12 test files (200 new tests)
-- 342 total tests pass (200 new + 142 existing), tsc 0, ESLint 0, vite build success (235KB gzip)
-
-### Key discoveries
-
-- recharts SVG cannot resolve CSS custom properties — Chart.tsx DEFAULT_COLORS must be hex values
-- `vi.stubGlobal("URL", {...})` breaks jsdom DOM rendering — use `Object.defineProperty(URL, "createObjectURL", {...})` instead
-- `getAllByText` needed when text appears in both StatCard and detail sections (AnalyticsPage, OverviewPage)
-- Log level badges: use `document.querySelector('[aria-label="Level: INFO"]')` to avoid collision with `<option>` text
-- Chart mock in page tests: named export `{ Chart: ... }` since Chart.tsx uses `export function Chart`
-- `@typescript-eslint/no-unused-vars` v8: `_prefix` convention NOT allowed by default — use no-param body arrows instead
-- Hook CWD issue (3rd occurrence: B15, B16, B17) — graduated to CLAUDE.md
 
 ---
 
 ## 2026-03-02 -- Block 18: E2E Test Suite (consolidated) [backend-worker]
 
-### What was delivered
-
-- 18 E2E tests across 5 files: pipeline (5), partial failure (4), draft workflow (2), config changes (3), API integration (4)
-- `tests/factories.py` — 9 factory-boy factories with corrected field names per B18 amendments
-- `tests/e2e/conftest.py` — 4 mock adapter classes (ABC-verified), DB fixtures, helper functions
-- `--run-e2e` flag + `e2e` marker; all 18 tests skip without flag, 1504 existing tests unaffected
-
-### Architecture decisions
-
-- Pipeline E2E: SYNC functions + `asyncio.run()` for DB (Celery uses `asyncio.run()` internally; nesting causes RuntimeError)
-- API integration: ASYNC functions with httpx AsyncClient + `get_async_db` override (no Celery tasks executed)
+- Pipeline E2E: SYNC functions + `asyncio.run()` — Celery uses `asyncio.run()` internally; nesting causes RuntimeError
+- API integration E2E: ASYNC (httpx AsyncClient + `get_async_db` override) — no Celery tasks executed
 - `task.run()` + patch NEXT task's `.delay()` prevents nested event loops
-- `_make_test_settings()` pattern: `real_settings.model_dump()` for mock override; `_make_session_factory()` with NullPool
-- `require_draft_access` access control: Admin all, Reviewer own (`draft.reviewer_id == current_user.id`); reviewer tests must set `reviewer_id`
-
-### Key discoveries — service error handling
-
-- `CRMSyncService._do_contact_lookup` silences `CRMConnectionError` → patch `HubSpotAdapter.connect()` NOT `lookup_contact` for failure test
-- `DraftGenerationService.generate()` silences `LLMConnectionError` → DRAFT_FAILED state, no Retry
-- `RoutingService._dispatch_rule_actions` silences `ChannelDeliveryError` per-action → ROUTING_FAILED, no Retry
-- `ClassificationService._call_llm_or_fail` re-raises `LLMAdapterError` → Retry raised at task level
-- `DraftStatus` changes do NOT touch `EmailState` — email stays `DRAFT_GENERATED`
+- `require_draft_access`: Admin all, Reviewer own (`draft.reviewer_id == current_user.id`)
+- Service error silencing: CRMSyncService silences `CRMConnectionError`; DraftGenService silences `LLMConnectionError`; RoutingService silences `ChannelDeliveryError`; ClassificationService re-raises `LLMAdapterError`
 
 ---
+
+## 2026-03-01 -- Block 18-19 key facts (consolidated) [Lorekeeper]
+
+- Docker: scheduler cmd is `python -m src.scheduler` (NOT `src.tasks.scheduler`); API health path is `/api/v1/health`
+- Alpine images: use `wget` not `curl` — curl not guaranteed in alpine
+- Worker health check: `celery inspect ping -d "celery@${HOSTNAME}"` — HOSTNAME set by Docker runtime
+- Logging: `configure_logging` called in lifespan, Celery `worker_init` signal, scheduler `main()` — deferred import to avoid circular deps
+- `.env.example` parity: 60+ Settings fields; parity test critical in B19
+
+---
+
+## 2026-03-01 -- Block 19: deployment.md + adapter-guide.md [Lorekeeper]
+
+### What was delivered
+
+- `docs/deployment.md`: 6-section deployment guide covering prerequisites, quick start, full env var reference table, first-time setup (Python REPL pattern for admin creation), production considerations, troubleshooting table
+- `docs/adapter-guide.md`: adapter extension guide with glossary, ABC method signatures, 5-step extension pattern for all 4 families (Outlook/Email, Teams/Channel, Salesforce/CRM, Ollama/LLM), contract-docstrings in example implementations, common patterns section
+
+### Key notes
+
+- Admin creation via Python REPL (no CLI module exists) — `AuthService.create_user()` REPL pattern documented
+- Adapter guide opens with class→integration glossary (concept-analysis requirement)
+- `_ensure_connected()` + `assert self._client is not None` pattern documented as standard mypy narrowing idiom
+- `classify()` fallback contract explicitly documented: MUST return result on parse failure, MUST NOT raise
+- CORS_ORIGINS: no default in production — startup fails if not set (B19 requirement)
+
+---
+
+## 2026-03-01 -- Block 19: Infrastructure tests (40 tests) [Inquisidor]
+
+### What was delivered
+
+- `tests/infrastructure/__init__.py` — package marker
+- `tests/infrastructure/test_env_example.py` — 6 tests: AST-based Settings field extraction vs .env.example parity, smoke tests for both parsers, required-fields guard
+- `tests/infrastructure/test_logging.py` — 20 tests: JSON/text output, log level filtering, logger interface, logger name/level/timestamp in JSON, correlation ID ContextVar (default, set, overwrite, injection in output), PII redaction (7 fields parametrized, raw value absent, simultaneous, nested NOT redacted by design)
+- `tests/infrastructure/test_health_checks.py` — 14 tests: 8 static compose file checks (no Docker), 2 Docker-gated checks under `@pytest.mark.docker`
+- `pyproject.toml`: added `markers` key to `[tool.pytest.ini_options]` — registered `e2e` and `docker` marks
+
+### Key discoveries
+
+- `capsys` capture of structlog output requires `configure_logging()` to be called INSIDE the test body (not in an autouse fixture). `logging.basicConfig(force=True)` recreates the StreamHandler pointing at pytest's redirected stderr only when called after capsys starts redirecting. If called in a fixture first, the handler captures real stderr and `capsys.readouterr().err` is empty.
+- `structlog.get_logger()` returns `BoundLoggerLazyProxy`, not `BoundLogger`. `isinstance(logger, structlog.stdlib.BoundLogger)` is always False. Test the interface (callable `.info`, `.warning`, etc.) not the internal type.
+- `yaml` deferred import inside Docker-gated test: needs `# type: ignore[import-untyped]` even with `ignore_missing_imports = true` because the import is inside a function body that mypy resolves separately.
+- `pytest_configure` hook inside a test module for registering marks works at collection time but the mark assignment at module level happens before it — causes `PytestUnknownMarkWarning`. Solution: register marks in `pyproject.toml [tool.pytest.ini_options] markers`.
+

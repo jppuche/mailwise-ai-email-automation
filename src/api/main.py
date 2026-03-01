@@ -45,6 +45,14 @@ from src.core.exceptions import (
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan: startup and shutdown hooks."""
+    from src.core.config import get_settings as _get_settings
+    from src.core.logging import configure_logging
+
+    _settings = _get_settings()
+    configure_logging(
+        log_level=_settings.log_level,
+        log_format=_settings.log_format,
+    )
     yield
     await close_redis()
 

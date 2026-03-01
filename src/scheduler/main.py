@@ -37,6 +37,13 @@ async def main() -> None:
     """
     settings = get_settings()
 
+    from src.core.logging import configure_logging
+
+    configure_logging(
+        log_level=settings.log_level,
+        log_format=settings.log_format,
+    )
+
     # Cat 8 fail-fast: lock TTL must cover the full poll interval
     assert settings.pipeline_scheduler_lock_ttl_seconds >= settings.polling_interval_seconds, (
         f"Lock TTL ({settings.pipeline_scheduler_lock_ttl_seconds}s) must be >= "

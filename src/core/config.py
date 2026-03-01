@@ -118,6 +118,10 @@ class Settings(BaseSettings):
     analytics_csv_chunk_size: int = Field(default=1000)
     analytics_default_timezone: str = Field(default="UTC")
 
+    # Logging (B19)
+    log_level: str = Field(default="INFO")
+    log_format: str = Field(default="json")
+
 
 def get_settings() -> Settings:
     return Settings()
