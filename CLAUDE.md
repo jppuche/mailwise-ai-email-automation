@@ -145,3 +145,5 @@ Configured in .claude/settings.local.json (do not commit).
 - Docker Desktop must be running for `import sqlalchemy` on Python 3.14 / Windows — engine creation hangs otherwise even for unit tests (Git Bash OOM kill)
 - Frontend hook CWD issue: `cd frontend && npm install` permanently changes Bash CWD; PreToolUse hooks fail (scripts not found relative to `frontend/`). Fix: create temporary stub scripts in `frontend/.claude/hooks/` (pass-through `{"decision":"allow"}`), delete after quality gates. Recurred B15/B16/B17.
 - recharts SVG cannot resolve CSS custom properties — Chart.tsx colors must use hex values, not `var(--color-*)`. Encapsulate all recharts imports in `Chart.tsx` only.
+- structlog processor signatures: use `MutableMapping[str, Any]` not `dict[str, Any]` — mypy `list-item` error in `structlog.configure(processors=[...])` otherwise
+- structlog + pytest capsys: `configure_logging()` must be called INSIDE the test body, not in a fixture — `logging.basicConfig(force=True)` attaches handler to pytest's redirected stderr only when called after capsys starts redirecting

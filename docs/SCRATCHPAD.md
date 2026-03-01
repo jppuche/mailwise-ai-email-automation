@@ -22,16 +22,14 @@ Compound learning: each session reads this file before working.
 - [user] Prefers infrastructure (Celery+Redis) for professional appearance
 - [user] Visualizations: larger readable text, typographic coherence (modular scale). Architecture: blueprint/neon. Decisions: editorial serif, cool slate/indigo palette.
 
-### Standing architecture decisions (spec-level, not yet in code)
+### Standing architecture decisions
 
-- [B15-B17] Frontend: access+refresh tokens in `useRef` (no cookies — backend has no httpOnly mechanism), ESLint `no-explicit-any`, CSS vars `[data-theme="dark"]`, types from `types/generated/`.
-- [B18] alignment-chart enforced as exit criteria. `CELERY_TASK_ALWAYS_EAGER=True` for E2E. `pytest --cov-fail-under=70`.
-- [B19] `CorrelationIdContext` via contextvars. Docker images pinned to patch. `CORS_ORIGINS` no default (fail-fast).
+- [B15-B17] Frontend: access+refresh tokens in `useRef`, ESLint `no-explicit-any`, CSS vars `[data-theme="dark"]`, types from `types/generated/`.
+- [B18] alignment-chart enforced as exit criteria. `CELERY_TASK_ALWAYS_EAGER=True` for E2E.
 
-### Open questions — unresolved (carry to development blocks)
+### Open questions — unresolved
 
 - [inquisidor] B16: `confidence` in `ReviewQueueItem` — `'high' | 'low'` or float 0.0–1.0?
-- [sentinel] B18-B19: `CELERY_TASK_ALWAYS_EAGER` security diffs, `PiiSanitizingFilter` false positives, `.env.example` parity
 
 ---
 
@@ -63,47 +61,13 @@ Compound learning: each session reads this file before working.
 
 ---
 
-## 2026-03-01 -- Block 18-19 key facts (consolidated) [Lorekeeper]
+## 2026-03-01 -- Blocks 18-19 (consolidated) [Lorekeeper]
 
-- Docker: scheduler cmd is `python -m src.scheduler` (NOT `src.tasks.scheduler`); API health path is `/api/v1/health`
-- Alpine images: use `wget` not `curl` — curl not guaranteed in alpine
-- Worker health check: `celery inspect ping -d "celery@${HOSTNAME}"` — HOSTNAME set by Docker runtime
-- Logging: `configure_logging` called in lifespan, Celery `worker_init` signal, scheduler `main()` — deferred import to avoid circular deps
-- `.env.example` parity: 60+ Settings fields; parity test critical in B19
-
----
-
-## 2026-03-01 -- Block 19: deployment.md + adapter-guide.md [Lorekeeper]
-
-### What was delivered
-
-- `docs/deployment.md`: 6-section deployment guide covering prerequisites, quick start, full env var reference table, first-time setup (Python REPL pattern for admin creation), production considerations, troubleshooting table
-- `docs/adapter-guide.md`: adapter extension guide with glossary, ABC method signatures, 5-step extension pattern for all 4 families (Outlook/Email, Teams/Channel, Salesforce/CRM, Ollama/LLM), contract-docstrings in example implementations, common patterns section
-
-### Key notes
-
-- Admin creation via Python REPL (no CLI module exists) — `AuthService.create_user()` REPL pattern documented
-- Adapter guide opens with class→integration glossary (concept-analysis requirement)
-- `_ensure_connected()` + `assert self._client is not None` pattern documented as standard mypy narrowing idiom
-- `classify()` fallback contract explicitly documented: MUST return result on parse failure, MUST NOT raise
-- CORS_ORIGINS: no default in production — startup fails if not set (B19 requirement)
-
----
-
-## 2026-03-01 -- Block 19: Infrastructure tests (40 tests) [Inquisidor]
-
-### What was delivered
-
-- `tests/infrastructure/__init__.py` — package marker
-- `tests/infrastructure/test_env_example.py` — 6 tests: AST-based Settings field extraction vs .env.example parity, smoke tests for both parsers, required-fields guard
-- `tests/infrastructure/test_logging.py` — 20 tests: JSON/text output, log level filtering, logger interface, logger name/level/timestamp in JSON, correlation ID ContextVar (default, set, overwrite, injection in output), PII redaction (7 fields parametrized, raw value absent, simultaneous, nested NOT redacted by design)
-- `tests/infrastructure/test_health_checks.py` — 14 tests: 8 static compose file checks (no Docker), 2 Docker-gated checks under `@pytest.mark.docker`
-- `pyproject.toml`: added `markers` key to `[tool.pytest.ini_options]` — registered `e2e` and `docker` marks
-
-### Key discoveries
-
-- `capsys` capture of structlog output requires `configure_logging()` to be called INSIDE the test body (not in an autouse fixture). `logging.basicConfig(force=True)` recreates the StreamHandler pointing at pytest's redirected stderr only when called after capsys starts redirecting. If called in a fixture first, the handler captures real stderr and `capsys.readouterr().err` is empty.
-- `structlog.get_logger()` returns `BoundLoggerLazyProxy`, not `BoundLogger`. `isinstance(logger, structlog.stdlib.BoundLogger)` is always False. Test the interface (callable `.info`, `.warning`, etc.) not the internal type.
-- `yaml` deferred import inside Docker-gated test: needs `# type: ignore[import-untyped]` even with `ignore_missing_imports = true` because the import is inside a function body that mypy resolves separately.
-- `pytest_configure` hook inside a test module for registering marks works at collection time but the mark assignment at module level happens before it — causes `PytestUnknownMarkWarning`. Solution: register marks in `pyproject.toml [tool.pytest.ini_options] markers`.
+- B18: 18 E2E tests, 9 factories; pipeline E2E sync, API E2E async; `task.run()` + patch next `.delay()`
+- B19: structured JSON logging (CorrelationIdFilter + PiiSanitizingFilter), Docker health checks all 6 services, `.env.example` 60+ fields, deployment.md + adapter-guide.md, 40 infrastructure tests
+- Docker: scheduler cmd `python -m src.scheduler`; API health `/api/v1/health`; Alpine uses `wget` not `curl`
+- Admin creation via Python REPL (no CLI module) — documented in deployment.md
+- structlog processor signatures: `MutableMapping[str, Any]` — graduated to CLAUDE.md
+- capsys + structlog testing: call `configure_logging()` inside test body — graduated to CLAUDE.md
+- pytest marks: register in `pyproject.toml [tool.pytest.ini_options] markers` not `pytest_configure` hook
 

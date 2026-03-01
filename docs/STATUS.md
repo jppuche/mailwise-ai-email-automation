@@ -4,18 +4,16 @@
 
 ## Current phase
 
-Phase N: Development Blocks (Phase 4 complete — ready to build)
+All 20 development blocks (B00-B19) complete. Ready for final review and deployment.
 
 ## Completed
 
 - [x] Phases 0-5: Foundation, Landscape, Tooling, Review, Blueprint, Team Assembly
 
-## In Progress
-
-- [ ] Blocks 18-19: E2E Tests, Observability (pending)
-
 ## Recently Completed
 
+- [x] Block 19: Deployment & Docs — Structured logging, Docker health checks (6 services), .env.example (60+ vars), deployment guide, adapter guide, 40 infra tests, 1487 total
+- [x] Block 18: E2E Tests — 18 E2E tests, 9 factories, pipeline + API integration coverage, 1504 total backend
 - [x] Block 17: Frontend Remaining — Routing Rules, Integrations, Analytics, Overview, Logs (5 pages, 10 components, 5 hooks, 5 API modules, 200 new tests, 342 total frontend)
 - [x] Block 16: Frontend Core — Email Browser, Review Queue, Classification Config (4 pages, 7 components, 4 hooks, 25 API fns, 142 tests total)
 - [x] Block 15: Frontend SPA — Auth & Email List (auth + shell + 27 tests; email list delivered in B16)
