@@ -44,6 +44,15 @@ class Settings(BaseSettings):
     llm_draft_max_tokens: int = Field(default=2000)
     llm_base_url: str = Field(default="")
 
+    # Ingestion lock (Cat 8: configurable defaults)
+    ingestion_lock_ttl_seconds: int = Field(default=300)
+    ingestion_lock_key_prefix: str = Field(default="mailwise:ingest:lock")
+
+    # Classification (Cat 8: configurable defaults)
+    classify_max_few_shot_examples: int = Field(default=10)
+    classify_feedback_snippet_chars: int = Field(default=200)
+    classify_internal_domains: str = Field(default="")
+
     # Celery
     celery_max_retries: int = Field(default=3)
     celery_backoff_base: int = Field(default=60)

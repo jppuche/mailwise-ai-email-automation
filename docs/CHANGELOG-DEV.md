@@ -143,6 +143,36 @@
 - `contextlib.suppress` for Retry-After int parsing (ruff SIM105); `TimeoutError` not `asyncio.TimeoutError` (UP041)
 - 103 new tests (36 schema, 22 formatter, 29 adapter, 16 contract), 467 total
 
+## 2026-02-28 -- Block 08: Classification Service
+
+- ClassificationService: orchestrates category load → prompt build → LLM call → validate → heuristics → persist
+- PromptBuilder: 5-layer prompt injection defense (role, categories, few-shot, data delimiters, post-validation)
+- HeuristicClassifier: 6 rule-based hints (urgent, complaint, internal, spam, escalate, noreply) — NEVER overrides LLM
+- Service schemas: 7 types (ActionCategoryDef, TypeCategoryDef, FeedbackExample, HeuristicResult, ClassificationRequest, ClassificationServiceResult, ClassificationBatchResult)
+- Naming collision resolved: `AdapterClassificationResult` alias enforced (grep-verifiable)
+- `_find_fallback()`: `next(..., None)` with explicit `CategoryNotFoundError` (WARNING-03 resolved)
+- Adapter `raw_llm_output: str` → ORM `raw_llm_output: dict` (JSONB): `json.loads()` with `{"raw_response": str}` fallback
+- try-except D7: DB loads, LLM calls, persist/transition; D8: prompt build, heuristics, slug validation (0 try/except)
+- Heuristic disagreement lowers confidence to LOW without overriding LLM result
+- Feedback loop: load N most-recent corrections as few-shot examples, silenced on failure
+- Settings: 3 new Cat 8 defaults (classify_max_few_shot_examples=10, classify_feedback_snippet_chars=200, classify_internal_domains="")
+- 175 new tests: 46 schema, 30 prompt_builder, 52 heuristics, 47 service
+- 865 total tests passing; quality gates: mypy 0 errors, ruff 0 violations, grep enforcement all pass
+
+## 2026-02-28 -- Block 07: Ingestion Pipeline
+
+- IngestionService: fetch → dedup → thread-check → sanitize → store (FETCHED → SANITIZED)
+- Distributed lock via Redis SET NX EX per account_id (resolved B07 open question: Redis, not asyncio.Lock)
+- Per-email isolation: DB errors on email N don't prevent N+1 (Cat 6)
+- Two independent commits per email: FETCHED insert + SANITIZED transition (D13)
+- Thread awareness: only newest message per thread_id proceeds to classification
+- Adapter RecipientData (no type) → ORM RecipientData (with type: to/cc/bcc) mapping
+- IngestionResult frozen dataclass + IngestionBatchResult mutable dataclass + SkipReason/FailureReason enums
+- Celery task wrapper: sync→async bridge via asyncio.run() (B12 will formalize)
+- Settings: added ingestion_lock_ttl_seconds (300) and ingestion_lock_key_prefix
+- 53 new tests: 20 schema, 27 service, 6 task. 690 total, 0 regressions
+- Quality gates: mypy 0 errors, ruff 0 violations, pytest 690/690
+
 ## 2026-02-21 -- Block 04: LLM Adapter
 
 - LLMAdapter ABC with 3 async abstract methods (classify, generate_draft, test_connection) and contract docstrings

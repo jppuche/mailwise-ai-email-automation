@@ -8,20 +8,17 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## Completed
 
-- [x] Phase 0: Foundation (directory structure, CLAUDE.md, hooks, Cerbero)
-- [x] Phase 1: Technical Landscape (15 tech decisions, ecosystem scan)
-- [x] Phase 2: Tooling & Security (8 evaluated, 2 approved, 3 rejected, 1 deferred)
-- [x] Phase 3: Strategic Review (15 confirmed, 6 adjusted, 18 directives)
-- [x] Phase 4: Architecture Blueprint (20 block specs, Sentinel review: 0 critical)
-- [x] Phase 5: Team Assembly (5 agents, 7 skills, Section 13 populated)
+- [x] Phases 0-5: Foundation, Landscape, Tooling, Review, Blueprint, Team Assembly
 
 ## In Progress
 
-- [ ] Block 07: Ingestion Pipeline (next)
-- [ ] Blocks 08-19 (pending)
+- [ ] Block 09: Routing Service (next)
+- [ ] Blocks 10-19 (pending)
 
 ## Recently Completed
 
+- [x] Block 08: Classification Service (PromptBuilder, HeuristicClassifier, 5-layer defense, 175 tests, 865 total)
+- [x] Block 07: Ingestion Pipeline (IngestionService, dedup, thread-aware, 53 tests, 690 total)
 - [x] Block 06: HubSpot CRM Adapter (HubSpotAdapter, 7 methods, 170 tests, 637 total)
 - [x] Block 05: Slack Channel Adapter (SlackAdapter, Block Kit formatter, 103 tests, 467 total)
 - [x] Block 04: LLM Adapter (LiteLLMAdapter, 7-shape parser, 106 tests, 364 total)

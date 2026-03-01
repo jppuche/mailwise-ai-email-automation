@@ -41,7 +41,7 @@ Compound learning: each session reads this file before working.
 ### Open questions — unresolved (carry to development blocks)
 
 - [inquisidor] B07: asyncio.Lock vs Redis SET NX EX for poll lock (Redis correct for multi-worker)
-- [inquisidor] B08: `tuple[str, str]` vs named dataclass for `build_classify_prompt()` return
+- [RESOLVED] B08: `tuple[str, str]` for `build_classify_prompt()` return (simple, spec says tuple)
 - [inquisidor] B09: `frozenset[str]` vs `set[str]` for VIP senders
 - [inquisidor] B10: `dict[str, str]` vs `list[FieldUpdate]` for field_updates
 - [inquisidor] B11: `list[str]` vs `list[InteractionRecord]` for recent_interactions
@@ -66,50 +66,37 @@ Compound learning: each session reads this file before working.
 
 ---
 
-## 2026-02-21 -- Block 02 Auth & Users (consolidated) [Lorekeeper]
+## 2026-02-21 -- Blocks 02-05 (consolidated) [Lorekeeper]
 
-- `HTTPBearer(auto_error=False)` for custom 401 (FastAPI default returns 403)
-- `override_db` fixture: NullPool engine + `app.dependency_overrides[get_async_db]`
-- Test-only RBAC endpoints registered on `app` at module load; `# noqa: B008` on Depends defaults
-- Sentinel PASS (0 CRITICAL, 1 WARNING: timing oracle in login — mitigated, single-tenant)
-
----
-
-## 2026-02-21 -- Block 03 Gmail Adapter [backend-worker]
-
-- `except (KeyError, ValueError, TypeError)` for per-message parse isolation (not bare Exception)
-- google modules in mypy `ignore_missing_imports` — no `type: ignore[import-untyped]` needed on imports
-- `Credentials()` constructor needs `# type: ignore[no-untyped-call]`
+- B02: `HTTPBearer(auto_error=False)` for custom 401; Sentinel PASS
+- B03: `Credentials()` needs `# type: ignore[no-untyped-call]`
+- B04: patch at import site for litellm mocks; keyword args for exception constructors
+- B05: `dict[str, object]` not `Any` (D1); `contextlib.suppress` for Retry-After; module-level `frozenset` for error codes (Cat 3)
 
 ---
 
-## 2026-02-21 -- Block 04 LLM Adapter [backend-worker]
+## 2026-02-28 -- Blocks 06-07 (consolidated) [Lorekeeper]
 
-- `litellm.api_key` / `litellm.api_base` set as globals in `__init__` (LiteLLM uses global config)
-- Mock target: `@patch("src.adapters.llm.litellm_adapter.litellm.acompletion")` — patch at import site
-- Post-construction mutation bypasses `Field(min_length=1)` — use for testing guard logic inside adapter
-- litellm exception positional arg order: use keyword args in tests to avoid positional ambiguity
-
----
-
-## 2026-02-21 -- Block 05 Slack Channel Adapter [backend-worker + Lorekeeper]
-
-- `send_notification(payload, destination_id)` — destination is separate param (spec had it in payload)
-- `asyncio.TimeoutError` → `TimeoutError` (ruff UP041, Python 3.11+)
-- `structlog.get_logger()` no longer needs `# type: ignore[no-any-return]` on this Python/structlog version
-- `dict[str, object]` for Block Kit output (not `dict[str, Any]` — tighten-types D1)
-- `contextlib.suppress` instead of `try/except/pass` for Retry-After int parsing (ruff SIM105)
-- `_AUTH_ERROR_CODES` / `_DELIVERY_ERROR_CODES` as module-level `frozenset` (Cat 3)
-- Contract tests: MockChannelAdapter validates bot_token non-empty + "xoxb-" prefix in connect()
-- Pre-existing mypy errors in `slack.py` (3: var-annotated, call-overload, unused-ignore) — not introduced by B05
-- 103 new tests (36 schemas, 22 formatter, 29 adapter, 16 contract), 467 total
+- B06: `connected_adapter` fixture bypasses `connect()` by setting `_connected = True` directly
+- B07: Redis SET NX EX for poll lock; two commits per email (FETCHED+SANITIZED)
+- B07: `mapped_column(default=uuid.uuid4)` is INSERT-time only — explicit `id=uuid.uuid4()` in constructor
+- Handoff docs contain all info needed — minimal codebase exploration required
 
 ---
 
-## 2026-02-28 -- Block 06 HubSpot CRM Adapter (consolidated) [Lorekeeper]
+## 2026-02-28 -- Block 08 Classification Service [backend-worker]
 
-- `get_page` called in BOTH `connect()` AND `test_connection()` — set `side_effect` AFTER `_connected_adapter()`, not before
-- `NewType` in Python 3.12+: `isinstance(result, str)` for runtime checks, NOT `ActivityId.__supertype__` (mypy `attr-defined`)
-- `connected_adapter` fixture bypasses `connect()` by setting `_connected = True` directly — decouples contract tests from credentials
-- Pydantic v2 + Python 3.14: `type: ignore[assignment]` on model attribute mutation no longer needed — mypy no longer flags it
-- 170 new tests (46 schema, 82 adapter, 42 contract), 637 total
+### Implementation notes
+
+- `raw_llm_output`: adapter returns `str`, ORM wants `dict` (JSONB) — `json.loads()` with fallback to `{"raw_response": str}`
+- mypy re-use of loop var name across typed loops: `for cat in action_cats` then `for cat in type_cats` → mypy error. Use different var names (`cat`/`tcat`)
+- Batch tests: `MagicMock()` in `list[ClassificationServiceResult]` fails Pydantic validation — must use real instances
+- Heuristic hints should use actual DB seed slugs for meaningful disagreement detection (not spec's non-matching slugs)
+- `_find_fallback`: `next((c for c if c.is_fallback), None)` with explicit `CategoryNotFoundError` (WARNING-03 resolved)
+
+### What worked well
+
+- 4 parallel test agents: schemas (46) + prompt_builder (30) + heuristics (52) + service (47) = 175 new tests
+- Only 7 batch test failures from agents (MagicMock vs Pydantic) — quick fix
+- All grep enforcement checks passed on first try (0 try/except in pure modules, alias present)
+- 865 total tests, 0 regressions
