@@ -393,6 +393,217 @@ export interface components {
     };
 
     // ----------------------------------------------------------------
+    // Routing Rules (B13 — src/api/routers/routing_rules.py)
+    // ----------------------------------------------------------------
+
+    /** Condition within a routing rule */
+    RoutingConditionSchema: {
+      field: string;
+      operator: string;
+      value: string | string[];
+    };
+
+    /** Action to take when a routing rule matches */
+    RoutingActionSchema: {
+      channel: string;
+      destination: string;
+      template_id?: string | null;
+    };
+
+    /** Response schema for a routing rule */
+    RoutingRuleResponse: {
+      id: string;
+      name: string;
+      is_active: boolean;
+      priority: number;
+      conditions: components["schemas"]["RoutingConditionSchema"][];
+      actions: components["schemas"]["RoutingActionSchema"][];
+      created_at: string;
+      updated_at: string;
+    };
+
+    /** Request body for POST /routing-rules */
+    RoutingRuleCreate: {
+      name: string;
+      is_active?: boolean;
+      conditions: components["schemas"]["RoutingConditionSchema"][];
+      actions: components["schemas"]["RoutingActionSchema"][];
+    };
+
+    /** Request body for PUT /routing-rules/{id} — all fields optional */
+    RoutingRuleUpdate: {
+      name?: string | null;
+      is_active?: boolean | null;
+      conditions?: components["schemas"]["RoutingConditionSchema"][] | null;
+      actions?: components["schemas"]["RoutingActionSchema"][] | null;
+    };
+
+    /** Request body for PUT /routing-rules/reorder */
+    RoutingRuleReorderRequest: {
+      ordered_ids: string[];
+    };
+
+    /** Request body for POST /routing-rules/test */
+    RuleTestRequest: {
+      email_id: string;
+      action_slug: string;
+      type_slug: string;
+      confidence: "high" | "low";
+      sender_email: string;
+      sender_domain: string;
+      subject: string;
+      snippet: string;
+      sender_name?: string | null;
+    };
+
+    /** Response from POST /routing-rules/test */
+    RuleTestResponse: {
+      matching_rules: components["schemas"]["RuleTestMatchResponse"][];
+      total_rules_evaluated: number;
+      total_actions: number;
+      dry_run: boolean;
+    };
+
+    /** Single matched rule in a test response */
+    RuleTestMatchResponse: {
+      rule_id: string;
+      rule_name: string;
+      priority: number;
+      would_dispatch: components["schemas"]["RoutingActionSchema"][];
+    };
+
+    // ----------------------------------------------------------------
+    // Analytics (B14 — src/api/routers/analytics.py)
+    // ----------------------------------------------------------------
+
+    /** Single data point for volume time series */
+    VolumeDataPoint: {
+      date: string;
+      count: number;
+    };
+
+    /** Response from GET /analytics/volume */
+    VolumeResponse: {
+      data_points: components["schemas"]["VolumeDataPoint"][];
+      total_emails: number;
+      start_date: string;
+      end_date: string;
+    };
+
+    /** Single item in a classification distribution */
+    DistributionItem: {
+      category: string;
+      display_name: string;
+      count: number;
+      percentage: number;
+    };
+
+    /** Response from GET /analytics/classification-distribution */
+    ClassificationDistributionResponse: {
+      actions: components["schemas"]["DistributionItem"][];
+      types: components["schemas"]["DistributionItem"][];
+      total_classified: number;
+    };
+
+    /** Response from GET /analytics/accuracy */
+    AccuracyResponse: {
+      total_classified: number;
+      total_overridden: number;
+      accuracy_pct: number;
+      period_start: string;
+      period_end: string;
+    };
+
+    /** Per-channel routing stats */
+    RoutingChannelStat: {
+      channel: string;
+      dispatched: number;
+      failed: number;
+      success_rate: number;
+    };
+
+    /** Response from GET /analytics/routing */
+    RoutingResponse: {
+      channels: components["schemas"]["RoutingChannelStat"][];
+      total_dispatched: number;
+      total_failed: number;
+      unrouted_count: number;
+    };
+
+    // ----------------------------------------------------------------
+    // Integrations — additional configs (B14)
+    // ----------------------------------------------------------------
+
+    /** Email integration config — read-only */
+    EmailIntegrationConfig: {
+      oauth_configured: boolean;
+      credentials_file: string;
+      token_file: string;
+      poll_interval_seconds: number;
+      max_results: number;
+    };
+
+    /** Slack/channel integration config — read-only */
+    ChannelIntegrationConfig: {
+      bot_token_configured: boolean;
+      signing_secret_configured: boolean;
+      default_channel: string;
+      snippet_length: number;
+      timeout_seconds: number;
+    };
+
+    /** HubSpot CRM integration config — read-only */
+    CRMIntegrationConfig: {
+      access_token_configured: boolean;
+      auto_create_contacts: boolean;
+      default_lead_status: string;
+      rate_limit_per_10s: number;
+      api_timeout_seconds: number;
+    };
+
+    // ----------------------------------------------------------------
+    // System Logs (B14 — src/api/routers/logs.py)
+    // ----------------------------------------------------------------
+
+    /** Single system log entry */
+    LogEntry: {
+      id: string;
+      timestamp: string;
+      level: string;
+      source: string;
+      message: string;
+      email_id: string | null;
+      context: Record<string, string>;
+    };
+
+    /** Paginated log response (offset/limit, NOT page-based) */
+    LogListResponse: {
+      items: components["schemas"]["LogEntry"][];
+      total: number;
+      limit: number;
+      offset: number;
+    };
+
+    // ----------------------------------------------------------------
+    // Health (B13 — src/api/routers/health.py)
+    // ----------------------------------------------------------------
+
+    /** Individual adapter health status */
+    AdapterHealthItem: {
+      name: string;
+      status: "ok" | "degraded" | "unavailable";
+      latency_ms: number | null;
+      error: string | null;
+    };
+
+    /** Response from GET /health */
+    HealthResponse: {
+      status: "ok" | "degraded";
+      version: string;
+      adapters: components["schemas"]["AdapterHealthItem"][];
+    };
+
+    // ----------------------------------------------------------------
     // Validation errors (FastAPI standard)
     // ----------------------------------------------------------------
 
@@ -464,7 +675,36 @@ export type FewShotExampleCreate = components["schemas"]["FewShotExampleCreate"]
 export type FewShotExampleUpdate = components["schemas"]["FewShotExampleUpdate"];
 
 export type LLMIntegrationConfig = components["schemas"]["LLMIntegrationConfig"];
+export type ConnectionTestResult = components["schemas"]["ConnectionTestResult"];
 export type LLMTestResult = components["schemas"]["ConnectionTestResult"];
+
+export type RoutingConditionSchema = components["schemas"]["RoutingConditionSchema"];
+export type RoutingActionSchema = components["schemas"]["RoutingActionSchema"];
+export type RoutingRuleResponse = components["schemas"]["RoutingRuleResponse"];
+export type RoutingRuleCreate = components["schemas"]["RoutingRuleCreate"];
+export type RoutingRuleUpdate = components["schemas"]["RoutingRuleUpdate"];
+export type RoutingRuleReorderRequest = components["schemas"]["RoutingRuleReorderRequest"];
+export type RuleTestRequest = components["schemas"]["RuleTestRequest"];
+export type RuleTestResponse = components["schemas"]["RuleTestResponse"];
+export type RuleTestMatchResponse = components["schemas"]["RuleTestMatchResponse"];
+
+export type VolumeDataPoint = components["schemas"]["VolumeDataPoint"];
+export type VolumeResponse = components["schemas"]["VolumeResponse"];
+export type DistributionItem = components["schemas"]["DistributionItem"];
+export type ClassificationDistributionResponse = components["schemas"]["ClassificationDistributionResponse"];
+export type AccuracyResponse = components["schemas"]["AccuracyResponse"];
+export type RoutingChannelStat = components["schemas"]["RoutingChannelStat"];
+export type RoutingResponse = components["schemas"]["RoutingResponse"];
+
+export type EmailIntegrationConfig = components["schemas"]["EmailIntegrationConfig"];
+export type ChannelIntegrationConfig = components["schemas"]["ChannelIntegrationConfig"];
+export type CRMIntegrationConfig = components["schemas"]["CRMIntegrationConfig"];
+
+export type LogEntry = components["schemas"]["LogEntry"];
+export type LogListResponse = components["schemas"]["LogListResponse"];
+
+export type AdapterHealthItem = components["schemas"]["AdapterHealthItem"];
+export type HealthResponse = components["schemas"]["HealthResponse"];
 
 /** Generic paginated response — not in components (generic) */
 export interface PaginatedResponse<T> {

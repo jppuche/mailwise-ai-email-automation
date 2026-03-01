@@ -12,10 +12,11 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 
 ## In Progress
 
-- [ ] Blocks 17-19: Routing Rules & User Mgmt, E2E Tests, Observability (pending)
+- [ ] Blocks 18-19: E2E Tests, Observability (pending)
 
 ## Recently Completed
 
+- [x] Block 17: Frontend Remaining — Routing Rules, Integrations, Analytics, Overview, Logs (5 pages, 10 components, 5 hooks, 5 API modules, 200 new tests, 342 total frontend)
 - [x] Block 16: Frontend Core — Email Browser, Review Queue, Classification Config (4 pages, 7 components, 4 hooks, 25 API fns, 142 tests total)
 - [x] Block 15: Frontend SPA — Auth & Email List (auth + shell + 27 tests; email list delivered in B16)
 - [x] Block 14: Analytics & Admin Endpoints (4 routers, 26 endpoints, 3 services, 139 tests, 1616 total)
@@ -29,8 +30,7 @@ Phase N: Development Blocks (Phase 4 complete — ready to build)
 - [x] Block 06: HubSpot CRM Adapter (HubSpotAdapter, 7 methods, 170 tests, 637 total)
 - [x] Block 05: Slack Channel Adapter (SlackAdapter, Block Kit formatter, 103 tests, 467 total)
 - [x] Block 04: LLM Adapter (LiteLLMAdapter, 7-shape parser, 106 tests, 364 total)
-- [x] Block 03: Gmail Adapter (ABC + GmailAdapter, 85 tests, 258 total)
-- [x] Blocks 00-02: Scaffolding, DB Models, Auth & Users (231 tests)
+- [x] Blocks 00-03: Scaffolding, DB Models, Auth & Users, Gmail Adapter (258 tests)
 
 ## Team & Tooling
 

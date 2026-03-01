@@ -12,10 +12,14 @@ import NotFoundPage from "@/pages/NotFoundPage";
 const EmailBrowserPage = React.lazy(() => import("@/pages/EmailBrowserPage"));
 const EmailDetailPage = React.lazy(() => import("@/pages/EmailDetailPage"));
 const ReviewQueuePage = React.lazy(() => import("@/pages/ReviewQueuePage"));
+const AnalyticsPage = React.lazy(() => import("@/pages/AnalyticsPage"));
 
 // Lazy loading para paginas admin-only (reducir bundle inicial de Reviewer)
 const ClassificationConfigPage = React.lazy(
   () => import("@/pages/ClassificationConfigPage"),
+);
+const RoutingRulesPage = React.lazy(
+  () => import("@/pages/RoutingRulesPage"),
 );
 const IntegrationsPage = React.lazy(
   () => import("@/pages/IntegrationsPage"),
@@ -24,23 +28,13 @@ const LogsPage = React.lazy(
   () => import("@/pages/LogsPage"),
 );
 
-// Placeholder para rutas no implementadas aun
-function Placeholder({ label }: { label: string }) {
-  return (
-    <div className="page-placeholder">
-      <h2 className="page-placeholder__title">{label}</h2>
-      <span className="page-placeholder__badge">Coming soon</span>
-    </div>
-  );
-}
-
 export const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
   },
   {
-    // Rutas protegidas — cualquier usuario autenticado
+    // Rutas protegidas — cualquier usuario autenticado (reviewer + admin)
     element: <ProtectedRoute />,
     children: [
       {
@@ -71,8 +65,15 @@ export const router = createBrowserRouter([
               </React.Suspense>
             ),
           },
-          { path: "/routing",    element: <Placeholder label="Routing Rules" /> },
-          { path: "/analytics",  element: <Placeholder label="Analytics" /> },
+          {
+            // Analytics: reviewer + admin can view
+            path: "/analytics",
+            element: (
+              <React.Suspense fallback={<div className="page-placeholder">Loading...</div>}>
+                <AnalyticsPage />
+              </React.Suspense>
+            ),
+          },
         ],
       },
     ],
@@ -89,6 +90,15 @@ export const router = createBrowserRouter([
             element: (
               <React.Suspense fallback={<div className="page-placeholder">Loading...</div>}>
                 <ClassificationConfigPage />
+              </React.Suspense>
+            ),
+          },
+          {
+            // Routing rules: admin only — moved from ProtectedRoute to admin group
+            path: "/routing",
+            element: (
+              <React.Suspense fallback={<div className="page-placeholder">Loading...</div>}>
+                <RoutingRulesPage />
               </React.Suspense>
             ),
           },

@@ -31,7 +31,7 @@ Compound learning: each session reads this file before working.
 ### Open questions — unresolved (carry to development blocks)
 
 - [inquisidor] B16: `confidence` in `ReviewQueueItem` — `'high' | 'low'` or float 0.0–1.0?
-- [backend-worker] B17: `PUT /api/routing-rules/reorder` — `string[]` or `{ id, priority }[]`?
+- [RESOLVED B17] `PUT /api/routing-rules/reorder` — `{ ordered_ids: string[] }` (index 0 → priority 1)
 - [inquisidor] B18: `SQLAlchemyModelFactory` async pattern, DB isolation E2E with Celery eager
 - [sentinel] B18-B19: `CELERY_TASK_ALWAYS_EAGER` security diffs, `PiiSanitizingFilter` false positives, `.env.example` parity
 
@@ -119,5 +119,25 @@ Compound learning: each session reads this file before working.
 - 115 new tests (37 hook + 78 component/page), 142 total frontend (up from 27 B15)
 - tsc 0 errors, ESLint 0 errors, vite build 116KB gzip, 142/142 pass
 - Architecture: 0 `any`, 0 manual type duplication, all types from generated schema
+
+---
+
+## 2026-03-02 -- Block 17: FE Remaining — Routing, Analytics, Integrations, Overview, Logs [agent]
+
+### What was delivered
+
+- 5 API modules (routing-rules, analytics, health, integrations, logs), 5 hooks, 10 components, 2 new pages + 3 stub replacements + router update
+- 1081 CSS lines appended (13 BEM blocks), 12 test files (200 new tests)
+- 342 total tests pass (200 new + 142 existing), tsc 0, ESLint 0, vite build success (235KB gzip)
+
+### Key discoveries
+
+- recharts SVG cannot resolve CSS custom properties — Chart.tsx DEFAULT_COLORS must be hex values
+- `vi.stubGlobal("URL", {...})` breaks jsdom DOM rendering — use `Object.defineProperty(URL, "createObjectURL", {...})` instead
+- `getAllByText` needed when text appears in both StatCard and detail sections (AnalyticsPage, OverviewPage)
+- Log level badges: use `document.querySelector('[aria-label="Level: INFO"]')` to avoid collision with `<option>` text
+- Chart mock in page tests: named export `{ Chart: ... }` since Chart.tsx uses `export function Chart`
+- `@typescript-eslint/no-unused-vars` v8: `_prefix` convention NOT allowed by default — use no-param body arrows instead
+- Hook CWD issue (3rd occurrence: B15, B16, B17) — graduated to CLAUDE.md
 
 ---
