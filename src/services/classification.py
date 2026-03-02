@@ -359,11 +359,21 @@ class ClassificationService:
         External state (D7) — silenced on failure: returns empty list.
         """
         try:
+            # Single JOIN query replaces N+1 individual lookups (F-03 fix)
             fb_result = await db.execute(
                 select(
-                    ClassificationFeedback.email_id,
-                    ClassificationFeedback.corrected_action_id,
-                    ClassificationFeedback.corrected_type_id,
+                    Email.body_plain,
+                    ActionCategory.slug.label("action_slug"),
+                    TypeCategory.slug.label("type_slug"),
+                )
+                .join(Email, ClassificationFeedback.email_id == Email.id)
+                .join(
+                    ActionCategory,
+                    ClassificationFeedback.corrected_action_id == ActionCategory.id,
+                )
+                .join(
+                    TypeCategory,
+                    ClassificationFeedback.corrected_type_id == TypeCategory.id,
                 )
                 .order_by(ClassificationFeedback.corrected_at.desc())
                 .limit(limit)
@@ -372,35 +382,18 @@ class ClassificationService:
             if not rows:
                 return []
 
-            # Resolve FK IDs to slugs via category lookup
             examples: list[FeedbackExample] = []
             for row in rows:
-                email_result = await db.execute(
-                    select(Email.body_plain).where(Email.id == row.email_id)
-                )
-                body = email_result.scalar_one_or_none()
-                if body is None:
+                if row.body_plain is None:
                     continue
-
-                action_result = await db.execute(
-                    select(ActionCategory.slug).where(ActionCategory.id == row.corrected_action_id)
-                )
-                action_slug = action_result.scalar_one_or_none()
-
-                type_result = await db.execute(
-                    select(TypeCategory.slug).where(TypeCategory.id == row.corrected_type_id)
-                )
-                type_slug = type_result.scalar_one_or_none()
-
-                if action_slug and type_slug:
-                    snippet = body[: self._settings.classify_feedback_snippet_chars]
-                    examples.append(
-                        FeedbackExample(
-                            email_snippet=snippet,
-                            correct_action=action_slug,
-                            correct_type=type_slug,
-                        )
+                snippet = row.body_plain[: self._settings.classify_feedback_snippet_chars]
+                examples.append(
+                    FeedbackExample(
+                        email_snippet=snippet,
+                        correct_action=row.action_slug,
+                        correct_type=row.type_slug,
                     )
+                )
 
             return examples
 

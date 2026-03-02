@@ -87,6 +87,11 @@ _RECLASSIFIABLE_STATES: frozenset[EmailState] = frozenset(
 )
 
 
+def _escape_like(value: str) -> str:
+    """Escape SQL LIKE/ILIKE wildcards to prevent pattern enumeration."""
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 @router.get("/", response_model=PaginatedResponse[EmailListItem])
 async def list_emails(
     pagination: PaginationParams = Depends(),  # noqa: B008
@@ -106,7 +111,8 @@ async def list_emails(
         base_q = base_q.where(Email.state == filters.state)
 
     if filters.sender is not None:
-        base_q = base_q.where(Email.sender_email.ilike(f"%{filters.sender}%"))
+        escaped = _escape_like(filters.sender)
+        base_q = base_q.where(Email.sender_email.ilike(f"%{escaped}%", escape="\\"))
 
     if filters.date_from is not None:
         base_q = base_q.where(Email.date >= filters.date_from)

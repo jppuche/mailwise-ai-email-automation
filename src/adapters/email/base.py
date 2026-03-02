@@ -35,6 +35,14 @@ class EmailAdapter(abc.ABC):
 
     Deduplication (avoiding re-processing the same ``gmail_message_id``) is
     the calling service's responsibility, not the adapter's.
+
+    Design note — sync interface:
+      Unlike ChannelAdapter, CRMAdapter, and LLMAdapter (which are async),
+      EmailAdapter methods are synchronous because the underlying Google
+      API client (``google-api-python-client``) is sync-only. The calling
+      service (``IngestionService``) wraps calls with
+      ``asyncio.to_thread()`` when needed. This avoids double-wrapping
+      at both the ABC and implementation levels.
     """
 
     @abc.abstractmethod
