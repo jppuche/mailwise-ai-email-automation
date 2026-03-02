@@ -469,10 +469,9 @@ class TestInvalidSlugFallback:
                 service,
                 "_load_feedback_examples",
                 new=AsyncMock(return_value=[]),
-            ),
+            ),pytest.raises(CategoryNotFoundError)
         ):
-            with pytest.raises(CategoryNotFoundError):
-                await service.classify_email(email.id, mock_db)
+            await service.classify_email(email.id, mock_db)
 
 
 # ---------------------------------------------------------------------------
@@ -656,10 +655,9 @@ class TestLLMErrors:
                 service,
                 "_load_feedback_examples",
                 new=AsyncMock(return_value=[]),
-            ),
+            ),pytest.raises(LLMConnectionError)
         ):
-            with pytest.raises(LLMConnectionError):
-                await service.classify_email(email.id, mock_db)
+            await service.classify_email(email.id, mock_db)
 
         # transition_to was called with CLASSIFICATION_FAILED
         email.transition_to.assert_called_once_with(EmailState.CLASSIFICATION_FAILED)
@@ -694,10 +692,9 @@ class TestLLMErrors:
                 service,
                 "_load_feedback_examples",
                 new=AsyncMock(return_value=[]),
-            ),
+            ),pytest.raises(LLMRateLimitError)
         ):
-            with pytest.raises(LLMRateLimitError):
-                await service.classify_email(email.id, mock_db)
+            await service.classify_email(email.id, mock_db)
 
         email.transition_to.assert_called_once_with(EmailState.CLASSIFICATION_FAILED)
 
@@ -727,10 +724,9 @@ class TestLLMErrors:
                 service,
                 "_load_feedback_examples",
                 new=AsyncMock(return_value=[]),
-            ),
+            ),pytest.raises(LLMTimeoutError)
         ):
-            with pytest.raises(LLMTimeoutError):
-                await service.classify_email(email.id, mock_db)
+            await service.classify_email(email.id, mock_db)
 
         email.transition_to.assert_called_once_with(EmailState.CLASSIFICATION_FAILED)
 
@@ -763,10 +759,10 @@ class TestLLMErrors:
                 "_load_feedback_examples",
                 new=AsyncMock(return_value=[]),
             ),
-        ):
             # Original LLMConnectionError must propagate, not the SQLAlchemyError
-            with pytest.raises(LLMConnectionError):
-                await service.classify_email(email.id, mock_db)
+            pytest.raises(LLMConnectionError),
+        ):
+            await service.classify_email(email.id, mock_db)
 
 
 # ---------------------------------------------------------------------------
@@ -788,9 +784,8 @@ class TestStateGuard:
             service,
             "_load_email_or_raise",
             new=AsyncMock(return_value=email),
-        ):
-            with pytest.raises(InvalidStateTransitionError, match="SANITIZED"):
-                await service.classify_email(email.id, mock_db)
+        ), pytest.raises(InvalidStateTransitionError, match="SANITIZED"):
+            await service.classify_email(email.id, mock_db)
 
     @pytest.mark.asyncio
     async def test_classified_email_raises_invalid_state(
@@ -805,9 +800,8 @@ class TestStateGuard:
             service,
             "_load_email_or_raise",
             new=AsyncMock(return_value=email),
-        ):
-            with pytest.raises(InvalidStateTransitionError):
-                await service.classify_email(email.id, mock_db)
+        ), pytest.raises(InvalidStateTransitionError):
+            await service.classify_email(email.id, mock_db)
 
     @pytest.mark.asyncio
     async def test_classification_failed_email_raises_invalid_state(
@@ -822,9 +816,8 @@ class TestStateGuard:
             service,
             "_load_email_or_raise",
             new=AsyncMock(return_value=email),
-        ):
-            with pytest.raises(InvalidStateTransitionError):
-                await service.classify_email(email.id, mock_db)
+        ), pytest.raises(InvalidStateTransitionError):
+            await service.classify_email(email.id, mock_db)
 
 
 # ---------------------------------------------------------------------------
@@ -846,9 +839,8 @@ class TestEmailNotFound:
             service,
             "_load_email_or_raise",
             new=AsyncMock(side_effect=ValueError(f"Email {email_id} not found")),
-        ):
-            with pytest.raises(ValueError, match=str(email_id)):
-                await service.classify_email(email_id, mock_db)
+        ), pytest.raises(ValueError, match=str(email_id)):
+            await service.classify_email(email_id, mock_db)
 
 
 # ---------------------------------------------------------------------------

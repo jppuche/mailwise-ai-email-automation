@@ -39,8 +39,10 @@ def _extract_env_example_vars() -> set[str]:
 
 
 # Fields that are in Settings but intentionally NOT in .env.example
-# (e.g., model_config is a Pydantic internal, not an env var)
-_EXCLUDED = {"MODEL_CONFIG"}
+# (e.g., model_config is a Pydantic internal, not an env var;
+#  llm_allowed_models_set is a computed frozenset populated by model_validator
+#  from llm_allowed_models — it is not read from env directly)
+_EXCLUDED = {"MODEL_CONFIG", "LLM_ALLOWED_MODELS_SET"}
 
 
 class TestEnvExampleParity:

@@ -1,10 +1,10 @@
 # Project Status — mailwise
 
-**Last updated:** 2026-03-01
+**Last updated:** 2026-03-02
 
 ## Current phase
 
-All 20 development blocks (B00-B19) complete. Ready for final review and deployment.
+All 21 blocks (B00-B20) complete. Project ready for publication.
 
 ## Completed
 
@@ -12,6 +12,7 @@ All 20 development blocks (B00-B19) complete. Ready for final review and deploym
 
 ## Recently Completed
 
+- [x] Block 20: Review & Polish — Docker fixes, 3 security warnings resolved, 93% coverage, CI/CD pipeline, 4 expert reviews, portfolio-ready README, 1780 tests
 - [x] Block 19: Deployment & Docs — Structured logging, Docker health checks (6 services), .env.example (60+ vars), deployment guide, adapter guide, 40 infra tests, 1487 total
 - [x] Block 18: E2E Tests — 18 E2E tests, 9 factories, pipeline + API integration coverage, 1504 total backend
 - [x] Block 17: Frontend Remaining — Routing Rules, Integrations, Analytics, Overview, Logs (5 pages, 10 components, 5 hooks, 5 API modules, 200 new tests, 342 total frontend)

@@ -75,3 +75,18 @@ markers = [
     "e2e: end-to-end tests that require a real database and mock adapters (deselect with '-m not e2e')",
     "docker: tests that require Docker containers running",
 ]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "src/models/*",
+]
+
+[tool.coverage.report]
+fail_under = 70
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ ==",
+]

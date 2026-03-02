@@ -35,15 +35,22 @@ curl http://localhost:8000/api/v1/health
 
 Services start in dependency order: `db` and `redis` first, then `api`, then `worker`, `scheduler`, and `frontend`. Allow ~60 seconds on first run while the API container pulls dependencies and runs Alembic migrations.
 
-Expected healthy output from `docker compose ps`:
+Expected healthy output from `docker compose ps` (base compose — db/redis have no host ports):
 ```
 NAME        STATUS                   PORTS
-db          Up (healthy)             0.0.0.0:5432->5432/tcp
-redis       Up (healthy)             0.0.0.0:6379->6379/tcp
+db          Up (healthy)
+redis       Up (healthy)
 api         Up (healthy)             0.0.0.0:8000->8000/tcp
 worker      Up (healthy)
 scheduler   Up (healthy)
 frontend    Up (healthy)             0.0.0.0:5173->5173/tcp
+```
+
+With the dev overlay (`docker compose -f docker-compose.yml -f docker-compose.dev.yml ps`):
+```
+NAME        STATUS                   PORTS
+db          Up (healthy)             0.0.0.0:5432->5432/tcp
+redis       Up (healthy)             0.0.0.0:6379->6379/tcp
 ```
 
 ## 3. Environment Variables
@@ -233,7 +240,7 @@ Minimum required Gmail scopes:
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
-The prod override (`docker-compose.prod.yml`) removes `ports:` exposure for `db` and `redis`, enabling the Nginx reverse proxy on 443 only.
+The base `docker-compose.yml` does not expose `ports:` for `db` or `redis` — they are internal to the Docker network. The dev overlay (`docker-compose.dev.yml`) adds host port bindings for local tool access. In production, do not use the dev overlay.
 
 ### HTTPS
 

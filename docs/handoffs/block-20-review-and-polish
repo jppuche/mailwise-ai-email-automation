@@ -1,0 +1,89 @@
+## Contexto del proyecto
+
+mailwise es un sistema de clasificación y enrutamiento inteligente de emails. Stack: Python 3.12 / FastAPI / SQLAlchemy 2.0 async / Celery + Redis / React + Vite + TypeScript / PostgreSQL / LiteLLM / Gmail API / Slack SDK / HubSpot API. Docker Compose con 6 servicios (api, worker, scheduler, db, redis, frontend).
+
+Los 20 bloques de desarrollo (B00-B19) están completos. 1487+ tests backend, 342 tests frontend. El proyecto necesita ahora pasar por las fases finales antes de publicación.
+
+**Objetivo del proyecto:** Portafolio profesional para posiciones de AI Engineer / AI Automation Lead (empresas y freelance). El README y la presentación general deben comunicar competencia técnica, pensamiento arquitectónico y capacidad de delivery end-to-end.
+
+## Tareas a planificar y ejecutar (en orden)
+
+### 1. Docker Smoke Test
+- Levantar los 6 servicios con `docker compose up`
+- Verificar que todos reportan healthy
+- Validar que el health endpoint `/api/v1/health` responde correctamente
+- Documentar cualquier fix necesario
+
+### 2. Security Review
+Hay 3 warnings de seguridad pendientes (docs/SCRATCHPAD.md):
+- WARNING-01: `LLM_ALLOWED_MODELS` allowlist necesaria (B04/B14) — validar que solo modelos aprobados pueden usarse
+- WARNING-02: `DRAFT_ORG_SYSTEM_PROMPT` max-length + startup warning (B11) — limitar longitud del prompt custom
+- WARNING-B02-01: Timing oracle en login — bcrypt no se ejecuta para usuarios inexistentes (B02) — llamar bcrypt con dummy hash para igualar timing
+- Ejecutar las skills de seguridad disponibles: pre-mortem, contract-docstrings, try-except sobre los módulos críticos
+
+### 3. Coverage Audit
+- Ejecutar `pytest --cov=src --cov-fail-under=70`
+- Identificar módulos con cobertura baja
+- Escribir tests adicionales donde sea necesario para llegar al threshold
+
+### 4. CI/CD Pipeline
+- Crear GitHub Actions workflow: lint (ruff), typecheck (mypy), tests (pytest), build (docker compose build)
+- Integrar claude-code-security-review (ya aprobado en docs/DECISIONS.md) para PRs
+- Badge de CI en el README
+
+### 5. Polish — Revisiones de Experto (fase ampliada)
+
+Hacer revisiones end-to-end del código completo desde múltiples perspectivas especializadas. Cada revisión debe producir findings concretos y fixes implementados:
+
+**5a. Revisión como Experto en AI/ML Automation:**
+- ¿El pipeline de clasificación (ingest → classify → route → CRM sync → draft) sigue best practices de ML ops?
+- ¿La integración con LLMs (prompt engineering, fallbacks, parsing) es robusta y production-ready?
+- ¿El sistema de few-shot examples y feedback loop está bien diseñado?
+- ¿La arquitectura soportaría escalar a múltiples modelos/proveedores?
+
+**5b. Revisión como Experto Desarrollador Senior / Arquitecto:**
+- ¿El adapter pattern está bien implementado en los 4 families (email, channel, CRM, LLM)?
+- ¿Los services siguen single responsibility? ¿Hay code smells?
+- ¿La separación API → Services → Adapters es consistente?
+- ¿Error handling y retry logic son production-grade?
+- ¿El código es mantenible y extensible?
+
+**5c. Revisión como Experto en DevOps / Infrastructure:**
+- ¿Docker Compose está production-ready? ¿Health checks son suficientes?
+- ¿El structured logging (structlog + correlation IDs) es adecuado para debugging en producción?
+- ¿La configuración via env vars sigue 12-factor app?
+- ¿Los scripts de deployment son completos?
+
+**5d. Revisión como Hiring Manager / Portfolio Reviewer:**
+- ¿El proyecto demuestra las competencias que busca un hiring manager para AI Engineer / Automation Lead?
+- ¿La documentación (README, architecture docs, decision log) cuenta una historia coherente?
+- ¿Hay algo que falte que un reviewer técnico esperaría ver?
+- ¿El test suite demuestra rigor profesional?
+
+### 6. README Research — Investigación de Repos Similares
+**ANTES de escribir el README**, investigar:
+- 5-10 repos populares de email automation / AI classification / intelligent routing en GitHub
+- Repos de portafolio que hayan conseguido tracción (stars, forks) en el espacio de AI/ML engineering
+- Analizar: estructura del README, qué secciones incluyen, cómo presentan la arquitectura, qué screenshots/diagrams usan, cómo comunican el value proposition
+- Extraer patrones comunes y diferenciadores
+
+### 7. README — Escritura con Propósito
+Con la investigación como base, crear un README que:
+- Comunique inmediatamente qué hace el sistema y por qué importa
+- Muestre arquitectura visualmente (diagrama del pipeline, stack overview)
+- Destaque decisiones técnicas clave (adapter pattern, 5-layer prompt injection defense, structured logging, etc.)
+- Incluya quick start funcional (docker compose up)
+- Tenga sección de "Why This Architecture" que demuestre pensamiento de diseño
+- Badges: CI, coverage, Python version, license
+- Sea scannable en 30 segundos pero profundo para quien quiera explorar
+- Que sea en Ingles
+- Orientado a potenciales clientes de freelance y hiring managers, que pueden ser no tecnicos, usa el progressive disclosure, maximixa la intro, hook y demas para transmitir que hace y porque es bueno frente a otras opciones.
+
+## Notas importantes
+- Leer CLAUDE.md, docs/SCRATCHPAD.md y docs/STATUS.md al inicio (Lorekeeper protocol)
+- Usar las skills instaladas donde aplique (pre-mortem, tighten-types, try-except, contract-docstrings, alignment-chart, concept-analysis)
+- Planificar donde corresponda (EnterPlanMode para tareas complejas)
+- Commits con formato: type(scope): description
+- Los 3 security warnings son el backlog de seguridad conocido — no son nuevos discoveries
+
+Empieza planificando el approach general y luego ejecuta paso a paso.

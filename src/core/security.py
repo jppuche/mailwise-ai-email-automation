@@ -10,6 +10,7 @@ Uses bcrypt directly (not passlib) — passlib 1.7.4 is unmaintained and
 incompatible with bcrypt>=4.2 on Python 3.14 (detect_wrap_bug failure).
 """
 
+import os
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import TypedDict
@@ -20,6 +21,20 @@ from jose.exceptions import JWTClaimsError
 
 from src.core.config import get_settings
 from src.core.exceptions import AuthenticationError
+
+# Pre-computed bcrypt hash used during login when the requested user does not
+# exist.  Calling verify_password() against this hash ensures constant-time
+# behaviour regardless of whether the username is valid, preventing a timing
+# oracle that could be used to enumerate valid usernames.
+#
+# The input is 32 cryptographically-random bytes so no text password can ever
+# match it.  Rounds are fixed at 12 (matches bcrypt_rounds default) — this
+# value is intentionally NOT derived from Settings so it is available at
+# module import time without triggering settings validation.
+_DUMMY_HASH: str = bcrypt.hashpw(
+    os.urandom(32),
+    bcrypt.gensalt(rounds=12),
+).decode("utf-8")
 
 
 class TokenPayload(TypedDict):

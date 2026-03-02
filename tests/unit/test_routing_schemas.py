@@ -20,7 +20,6 @@ from src.services.schemas.routing import (
     RuleTestResult,
 )
 
-
 # ---------------------------------------------------------------------------
 # RoutingContext
 # ---------------------------------------------------------------------------
@@ -173,12 +172,17 @@ class TestRoutingActionDef:
 
 
 class TestRuleMatchResult:
-    def _make_action(self, channel: str = "slack", destination: str = "#support") -> RoutingActionDef:
+    def _make_action(
+        self, channel: str = "slack", destination: str = "#support"
+    ) -> RoutingActionDef:
         return RoutingActionDef(channel=channel, destination=destination)
 
     def test_rule_match_result_valid_with_actions(self) -> None:
         rule_id = uuid.uuid4()
-        actions = [self._make_action(), self._make_action(channel="email", destination="ops@example.com")]
+        actions = [
+            self._make_action(),
+            self._make_action(channel="email", destination="ops@example.com"),
+        ]
         match = RuleMatchResult(
             rule_id=rule_id,
             rule_name="VIP Escalation",

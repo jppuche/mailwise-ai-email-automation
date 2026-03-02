@@ -366,7 +366,7 @@ def _make_classify_sys_patches(
 
     Returns (patches_dict, mock_service, mock_db_ctx).
     """
-    from src.adapters.llm.exceptions import LLMRateLimitError
+    from src.adapters.llm.exceptions import LLMAdapterError, LLMRateLimitError
     from src.adapters.llm.schemas import LLMConfig
 
     mock_settings = _make_mock_settings_for_classify()
@@ -400,6 +400,7 @@ def _make_classify_sys_patches(
     mock_classification_svc_mod.ClassificationService.return_value = mock_service
 
     mock_llm_exc_mod = MagicMock()
+    mock_llm_exc_mod.LLMAdapterError = LLMAdapterError
     mock_llm_exc_mod.LLMRateLimitError = LLMRateLimitError
 
     from src.models.email import Email
@@ -576,12 +577,25 @@ def _make_routing_sys_patches(
 
     mock_channel_schemas_mod = MagicMock()
 
+    from src.adapters.channel.exceptions import ChannelAdapterError, ChannelRateLimitError
+
+    mock_channel_exc_mod = MagicMock()
+    mock_channel_exc_mod.ChannelAdapterError = ChannelAdapterError
+    mock_channel_exc_mod.ChannelRateLimitError = ChannelRateLimitError
+
+    from src.adapters.channel.base import ChannelAdapter
+
+    mock_channel_base_mod = MagicMock()
+    mock_channel_base_mod.ChannelAdapter = ChannelAdapter
+
     patches = {
         "src.core.config": mock_config_mod,
         "src.services.routing": mock_routing_svc_mod,
         "src.core.database": mock_db_mod,
         "src.adapters.channel.slack": mock_slack_mod,
         "src.adapters.channel.schemas": mock_channel_schemas_mod,
+        "src.adapters.channel.exceptions": mock_channel_exc_mod,
+        "src.adapters.channel.base": mock_channel_base_mod,
     }
     return patches, mock_service
 
@@ -621,8 +635,8 @@ class TestRunRouting:
 
     @pytest.mark.asyncio
     async def test_exception_retries_without_chaining(self) -> None:
-        """Exception in route() -> task.retry raised, no CRM sync enqueued."""
-        exc = RuntimeError("routing failure")
+        """Network error in route() -> task.retry raised, no CRM sync enqueued."""
+        exc = OSError("routing network failure")
         patches, _ = _make_routing_sys_patches(route_side_effect=exc)
         mock_task = _make_mock_task()
         mock_task.retry.side_effect = RuntimeError("task.retry called")

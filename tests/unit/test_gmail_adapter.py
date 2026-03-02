@@ -10,7 +10,7 @@ from __future__ import annotations
 import base64
 from datetime import UTC, datetime
 from typing import Any
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 from google.oauth2.credentials import Credentials
@@ -30,7 +30,6 @@ from src.adapters.email.schemas import (
     EmailCredentials,
     EmailMessage,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -177,7 +176,6 @@ class TestFetchNewMessages:
         self, adapter: GmailAdapter, mock_service: MagicMock
     ) -> None:
         since = datetime(2025, 1, 20, 10, 0, tzinfo=UTC)
-        epoch = int(since.timestamp())
 
         mock_service.users().messages().list().execute.return_value = {
             "resultSizeEstimate": 0,

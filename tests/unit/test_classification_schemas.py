@@ -22,7 +22,6 @@ from src.services.schemas.classification import (
     TypeCategoryDef,
 )
 
-
 # ---------------------------------------------------------------------------
 # ActionCategoryDef — frozen dataclass
 # ---------------------------------------------------------------------------

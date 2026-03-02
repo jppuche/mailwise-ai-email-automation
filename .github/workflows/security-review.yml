@@ -1,0 +1,27 @@
+name: Security Review
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    name: Claude Security Review
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          direct_prompt: |
+            Review this PR for security issues. Focus on:
+            - OWASP Top 10 vulnerabilities
+            - Prompt injection risks in LLM integration
+            - Authentication/authorization bypasses
+            - SQL injection via SQLAlchemy
+            - Secret exposure in logs or responses
+          timeout_minutes: 10

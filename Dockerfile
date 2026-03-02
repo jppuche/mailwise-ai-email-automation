@@ -7,7 +7,7 @@ COPY pyproject.toml .
 COPY src/ ./src/
 
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -e .
+    pip install --no-cache-dir .
 
 # Stage 2: runtime — lean production image
 FROM python:3.12-slim AS runtime
@@ -21,6 +21,10 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/pyproject.toml .
 COPY --from=builder /app/mailwise.egg-info ./mailwise.egg-info
+COPY docker/ ./docker/
+COPY alembic/ ./alembic/
+COPY alembic.ini .
+RUN sed -i 's/\r$//' ./docker/healthchecks/*.sh && chmod +x ./docker/healthchecks/*.sh
 
 USER app
 

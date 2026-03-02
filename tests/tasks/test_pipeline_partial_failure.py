@@ -629,7 +629,7 @@ def _build_classification_sys_patches(
     """
     import types
 
-    from src.adapters.llm.exceptions import LLMRateLimitError
+    from src.adapters.llm.exceptions import LLMAdapterError, LLMRateLimitError
     from src.adapters.llm.schemas import LLMConfig
     from src.models.email import Email
 
@@ -657,8 +657,9 @@ def _build_classification_sys_patches(
     mock_classification_svc_mod: MagicMock = MagicMock()
     mock_classification_svc_mod.ClassificationService.return_value = mock_service
 
-    # Real exception class so isinstance checks inside _run_classification work
+    # Real exception classes so except clauses inside _run_classification work
     mock_llm_exc_mod: MagicMock = MagicMock()
+    mock_llm_exc_mod.LLMAdapterError = LLMAdapterError
     mock_llm_exc_mod.LLMRateLimitError = LLMRateLimitError
 
     mock_email_mod: MagicMock = MagicMock()

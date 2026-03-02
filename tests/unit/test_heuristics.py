@@ -13,7 +13,6 @@ import pytest
 from src.services.heuristics import HeuristicClassifier
 from src.services.schemas.classification import ClassificationRequest, HeuristicResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

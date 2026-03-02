@@ -100,7 +100,7 @@ class RoutingAction(Base, TimestampMixin):
         nullable=False,
         default=RoutingActionStatus.PENDING,
     )
-    dispatch_id: Mapped[str | None] = mapped_column(sa.String(255), nullable=True)
+    dispatch_id: Mapped[str | None] = mapped_column(sa.String(255), nullable=True, index=True)
     dispatched_at: Mapped[datetime.datetime | None] = mapped_column(
         sa.DateTime(timezone=True), nullable=True
     )

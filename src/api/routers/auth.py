@@ -29,6 +29,7 @@ from src.api.schemas.auth import (
 )
 from src.core.database import get_async_db
 from src.core.security import (
+    _DUMMY_HASH,
     create_access_token,
     create_refresh_token,
     verify_password,
@@ -53,7 +54,13 @@ async def login(
     result = await db.execute(select(User).where(User.username == body.username))
     user = result.scalar_one_or_none()
 
-    if user is None or not verify_password(body.password, user.password_hash):
+    # Constant-time password check: always call verify_password regardless of
+    # whether the user exists.  Using _DUMMY_HASH when user is None prevents a
+    # timing oracle that would allow username enumeration (WARNING-B02-01).
+    password_hash = user.password_hash if user is not None else _DUMMY_HASH
+    password_valid = verify_password(body.password, password_hash)
+
+    if user is None or not password_valid:
         logger.warning("login_failed", username=body.username)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

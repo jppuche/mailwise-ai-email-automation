@@ -295,6 +295,17 @@
 - 115 new tests: 37 hook tests + 78 component/page tests; 142 total frontend tests (up from 27)
 - Quality gates: tsc 0, ESLint 0 errors (3 pre-existing warnings), vite build 116KB gzip, 142/142 pass
 
+## 2026-03-02 -- Block 20: Review & Polish
+
+- Docker Smoke Test: fixed Dockerfile (missing COPY for docker/, alembic/, alembic.ini), created `src/scheduler/__main__.py`, rewrote scheduler healthcheck (pgrep → /proc/1/cmdline), fixed CRLF line endings, `pip install -e .` → `pip install .`
+- Security: WARNING-01 resolved — LLM_ALLOWED_MODELS allowlist with `_validate_model()` in LiteLLMAdapter; WARNING-02 resolved — `draft_org_system_prompt` max_length=4096 + startup warning; WARNING-B02-01 resolved — timing oracle fix with `_DUMMY_HASH` constant-time bcrypt
+- Coverage: baseline 85.49% → 93.20% with 104 new gap-fill tests across 7 files (analytics, category, integration services, Redis client, API deps, scheduler, health checks)
+- CI/CD: `.github/workflows/quality.yml` rewritten with 5 jobs (lint, typecheck, test, frontend, build); `.github/workflows/security-review.yml` for PR security review via claude-code-action
+- Expert Reviews: 4 parallel reviews (AI/ML, Architecture, DevOps, Hiring Manager) → `@lru_cache` on `get_settings()`, db/redis ports to dev overlay, Redis password support, narrowed `except Exception` to specific adapter exceptions, `dispatch_id` index
+- README: complete portfolio-ready rewrite with Mermaid architecture diagram, progressive disclosure, badges, quick start, "Why This Architecture" section
+- Lint: 39 ruff issues auto-fixed + 12 manual fixes (E501, SIM117, F841, E402)
+- 1780 total tests passing (1780 passed, 76 skipped); quality gates: ruff 0, mypy (pending)
+
 ## 2026-03-02 -- Block 13: REST API Core
 
 - 4 routers: health, emails, routing-rules, drafts — all under `/api/v1/` prefix

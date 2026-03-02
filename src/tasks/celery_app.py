@@ -46,7 +46,7 @@ def _create_celery_app() -> Celery:
 
 celery_app = _create_celery_app()
 
-from celery.signals import worker_init  # type: ignore[attr-defined]
+from celery.signals import worker_init  # type: ignore[attr-defined]  # noqa: E402
 
 
 @worker_init.connect  # type: ignore[misc]

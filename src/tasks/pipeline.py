@@ -132,7 +132,7 @@ async def _run_classification(task: object, email_id_str: str) -> None:
     """Async bridge: load email, classify, chain to route_task."""
     from sqlalchemy import select
 
-    from src.adapters.llm.exceptions import LLMRateLimitError
+    from src.adapters.llm.exceptions import LLMAdapterError, LLMRateLimitError
     from src.adapters.llm.litellm_adapter import LiteLLMAdapter
     from src.adapters.llm.schemas import LLMConfig
     from src.core.config import get_settings
@@ -180,9 +180,18 @@ async def _run_classification(task: object, email_id_str: str) -> None:
                 countdown=countdown,
             )
             raise task.retry(exc=exc, countdown=countdown) from exc  # type: ignore[attr-defined]
-        except Exception as exc:
+        except LLMAdapterError as exc:
+            # Transient LLM errors (connection, timeout) — retryable.
             logger.error(
-                "classify_task_unexpected_error",
+                "classify_task_llm_error_retry",
+                email_id=email_id_str,
+                error=str(exc),
+            )
+            raise task.retry(exc=exc) from exc  # type: ignore[attr-defined]
+        except OSError as exc:
+            # Network-level errors from underlying HTTP client — retryable.
+            logger.error(
+                "classify_task_network_error_retry",
                 email_id=email_id_str,
                 error=str(exc),
             )
@@ -213,6 +222,7 @@ def route_task(self: object, email_id: str) -> None:
 async def _run_routing(task: object, email_id_str: str) -> None:
     """Async bridge: load email, route, chain to crm_sync_task."""
     from src.adapters.channel.base import ChannelAdapter
+    from src.adapters.channel.exceptions import ChannelAdapterError, ChannelRateLimitError
     from src.adapters.channel.schemas import ChannelCredentials
     from src.adapters.channel.slack import SlackAdapter
     from src.core.config import get_settings
@@ -243,9 +253,26 @@ async def _run_routing(task: object, email_id_str: str) -> None:
             # Bifurcation: enqueue CRM sync if routing was successful
             if routing_result.was_routed:
                 pipeline_crm_sync_task.delay(email_id_str)
-        except Exception as exc:
+        except ChannelRateLimitError as exc:
+            countdown = exc.retry_after_seconds or settings.celery_backoff_base
+            logger.warning(
+                "route_task_rate_limited_retry",
+                email_id=email_id_str,
+                countdown=countdown,
+            )
+            raise task.retry(exc=exc, countdown=countdown) from exc  # type: ignore[attr-defined]
+        except ChannelAdapterError as exc:
+            # Transient channel errors (connection, delivery) — retryable.
             logger.error(
-                "route_task_unexpected_error",
+                "route_task_channel_error_retry",
+                email_id=email_id_str,
+                error=str(exc),
+            )
+            raise task.retry(exc=exc) from exc  # type: ignore[attr-defined]
+        except OSError as exc:
+            # Network-level errors — retryable.
+            logger.error(
+                "route_task_network_error_retry",
                 email_id=email_id_str,
                 error=str(exc),
             )

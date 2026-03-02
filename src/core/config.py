@@ -1,4 +1,6 @@
-from pydantic import Field
+from functools import lru_cache
+
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -43,6 +45,10 @@ class Settings(BaseSettings):
     llm_classify_max_tokens: int = Field(default=500)
     llm_draft_max_tokens: int = Field(default=2000)
     llm_base_url: str = Field(default="")
+    # Comma-separated allowlist of LLM model names. Empty string means "use configured models".
+    llm_allowed_models: str = Field(default="")
+    # Parsed frozenset — populated by model_validator, not from env directly.
+    llm_allowed_models_set: frozenset[str] = Field(default_factory=frozenset, exclude=True)
 
     # Ingestion lock (Cat 8: configurable defaults)
     ingestion_lock_ttl_seconds: int = Field(default=300)
@@ -103,7 +109,7 @@ class Settings(BaseSettings):
 
     # Draft Generation (Cat 8: configurable defaults)
     draft_push_to_gmail: bool = Field(default=False)
-    draft_org_system_prompt: str = Field(default="")
+    draft_org_system_prompt: str = Field(default="", max_length=4096)
     draft_org_tone: str = Field(default="professional")
     draft_org_signature: str = Field(default="")
     draft_org_prohibited_language: str = Field(default="")  # comma-separated
@@ -122,6 +128,26 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO")
     log_format: str = Field(default="json")
 
+    @model_validator(mode="after")
+    def _build_allowed_models_set(self) -> "Settings":
+        """Parse llm_allowed_models into a frozenset.
 
+        Empty string defaults to the three configured model names so the
+        allowlist is always non-empty after validation (Cat 8: load-bearing
+        default is the configured models themselves).
+        """
+        if self.llm_allowed_models.strip():
+            parsed: frozenset[str] = frozenset(
+                m.strip() for m in self.llm_allowed_models.split(",") if m.strip()
+            )
+        else:
+            parsed = frozenset(
+                {self.llm_model_classify, self.llm_model_draft, self.llm_fallback_model}
+            )
+        self.llm_allowed_models_set = parsed
+        return self
+
+
+@lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()

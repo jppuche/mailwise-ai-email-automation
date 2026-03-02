@@ -97,6 +97,13 @@ class LiteLLMAdapter(LLMAdapter):
 
         model = options.model or self._config.classify_model
 
+        # Allowlist check (D8: local computation — conditional, not try/except)
+        if self._config.allowed_models and model not in self._config.allowed_models:
+            raise ValueError(
+                f"Model {model!r} is not in the allowed models list: "
+                f"{sorted(self._config.allowed_models)}"
+            )
+
         # External-state operation (D7: structured try/except)
         try:
             response = await litellm.acompletion(
@@ -181,6 +188,13 @@ class LiteLLMAdapter(LLMAdapter):
             raise ValueError("system_prompt must not be empty")
 
         model = options.model or self._config.draft_model
+
+        # Allowlist check (D8: local computation — conditional, not try/except)
+        if self._config.allowed_models and model not in self._config.allowed_models:
+            raise ValueError(
+                f"Model {model!r} is not in the allowed models list: "
+                f"{sorted(self._config.allowed_models)}"
+            )
 
         # External-state operation (D7)
         try:

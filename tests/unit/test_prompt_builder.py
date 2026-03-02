@@ -13,8 +13,6 @@ from __future__ import annotations
 
 import uuid
 
-import pytest
-
 from src.services.prompt_builder import (
     DATA_DELIMITER_END,
     DATA_DELIMITER_START,
@@ -111,8 +109,12 @@ def _build(
     builder = PromptBuilder()
     return builder.build_classify_prompt(
         email_content=email_content,
-        action_categories=action_categories if action_categories is not None else _make_action_categories(),
-        type_categories=type_categories if type_categories is not None else _make_type_categories(),
+        action_categories=(
+            action_categories if action_categories is not None else _make_action_categories()
+        ),
+        type_categories=(
+            type_categories if type_categories is not None else _make_type_categories()
+        ),
         few_shot_examples=few_shot_examples if few_shot_examples is not None else [],
         max_examples=max_examples,
     )

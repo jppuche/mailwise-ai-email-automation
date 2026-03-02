@@ -56,6 +56,7 @@ class LLMConfig(BaseModel):
     classify_model: str
     draft_model: str
     fallback_model: str
+    allowed_models: frozenset[str] = Field(default_factory=frozenset)
     api_key: str | None = None
     base_url: str | None = None
     timeout_seconds: int = Field(default=30, gt=0)

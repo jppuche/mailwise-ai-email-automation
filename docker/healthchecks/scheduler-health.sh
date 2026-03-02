@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # Scheduler health check — used by docker-compose healthcheck.
-# Verifies: (1) scheduler process is alive, (2) Redis lock key exists
-# (proves the scheduler ran at least once recently).
-set -euo pipefail
+# Verifies the main Python process (PID 1) is alive and is the scheduler.
+# Uses /proc filesystem instead of pgrep (not available in python:3.12-slim).
+set -e
 
-# Check that the main Python process is alive
-pgrep -f "src.scheduler" > /dev/null 2>&1
+# PID 1 is the scheduler process in the container
+test -f /proc/1/cmdline && grep -qa "src.scheduler" /proc/1/cmdline

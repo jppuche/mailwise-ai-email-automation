@@ -6,10 +6,7 @@ The parser is pure local computation — no mocks or external dependencies.
 
 from __future__ import annotations
 
-import pytest
-
 from src.adapters.llm.parser import parse_classification
-from src.adapters.llm.schemas import ClassificationResult
 
 ACTIONS = ["reply", "forward", "inform", "archive"]
 TYPES = ["support", "sales", "notification", "internal"]
@@ -70,13 +67,19 @@ class TestTextAroundJson:
     """Shape 3 — LLM explains before/after the JSON."""
 
     def test_text_before_json(self) -> None:
-        raw = 'Based on the email content, here is my classification:\n{"action": "reply", "type": "support"}\nThis is a support request.'
+        raw = (
+            'Based on the email content, here is my classification:\n'
+            '{"action": "reply", "type": "support"}\nThis is a support request.'
+        )
         result = parse_classification(raw, ACTIONS, TYPES)
         assert result is not None
         assert result.action == "reply"
 
     def test_text_after_json(self) -> None:
-        raw = '{"action": "inform", "type": "notification"}\nThe above classification is based on...'
+        raw = (
+            '{"action": "inform", "type": "notification"}\n'
+            'The above classification is based on...'
+        )
         result = parse_classification(raw, ACTIONS, TYPES)
         assert result is not None
         assert result.action == "inform"
@@ -114,14 +117,20 @@ class TestThinkingTags:
     """Shape 5 — thinking-mode models emit <think> blocks."""
 
     def test_thinking_tags_stripped(self) -> None:
-        raw = '<think>The email asks about pricing, so this is sales.</think>\n{"action": "reply", "type": "sales"}'
+        raw = (
+            '<think>The email asks about pricing, so this is sales.</think>\n'
+            '{"action": "reply", "type": "sales"}'
+        )
         result = parse_classification(raw, ACTIONS, TYPES)
         assert result is not None
         assert result.action == "reply"
         assert result.type == "sales"
 
     def test_multiline_thinking(self) -> None:
-        raw = '<think>\nLet me analyze...\nThis is a support request.\n</think>\n{"action": "reply", "type": "support"}'
+        raw = (
+            '<think>\nLet me analyze...\nThis is a support request.\n</think>\n'
+            '{"action": "reply", "type": "support"}'
+        )
         result = parse_classification(raw, ACTIONS, TYPES)
         assert result is not None
         assert result.action == "reply"
@@ -136,7 +145,10 @@ class TestExtraFields:
     """Shape 6 — LLM adds fields not in the schema."""
 
     def test_extra_fields_dropped(self) -> None:
-        raw = '{"action": "reply", "type": "support", "explanation": "This is a support request", "priority": "high"}'
+        raw = (
+            '{"action": "reply", "type": "support",'
+            ' "explanation": "This is a support request", "priority": "high"}'
+        )
         result = parse_classification(raw, ACTIONS, TYPES)
         assert result is not None
         assert result.action == "reply"
@@ -192,7 +204,10 @@ class TestCombinedShapes:
         assert result.type == "support"
 
     def test_thinking_plus_extra_fields(self) -> None:
-        raw = '<think>This is sales.</think>\n{"action": "forward", "type": "sales", "reason": "pricing inquiry"}'
+        raw = (
+            '<think>This is sales.</think>\n'
+            '{"action": "forward", "type": "sales", "reason": "pricing inquiry"}'
+        )
         result = parse_classification(raw, ACTIONS, TYPES)
         assert result is not None
         assert result.action == "forward"

@@ -45,6 +45,8 @@ from src.core.exceptions import (
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan: startup and shutdown hooks."""
+    import structlog as _structlog
+
     from src.core.config import get_settings as _get_settings
     from src.core.logging import configure_logging
 
@@ -53,6 +55,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         log_level=_settings.log_level,
         log_format=_settings.log_format,
     )
+
+    _startup_logger = _structlog.get_logger()
+
+    # WARNING-02: warn when org system prompt is unusually long (>2000 chars)
+    if len(_settings.draft_org_system_prompt) > 2000:
+        _startup_logger.warning(  # type: ignore[no-any-return]
+            "draft_org_system_prompt_long",
+            length=len(_settings.draft_org_system_prompt),
+        )
+
     yield
     await close_redis()
 

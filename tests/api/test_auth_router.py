@@ -17,14 +17,23 @@ from httpx import AsyncClient
 class TestAuthRouterMounting:
     """Verify that auth endpoints are mounted at /api/v1/auth/*."""
 
-    async def test_login_path_exists(self, client: AsyncClient) -> None:
+    async def test_login_path_exists(self, unauthenticated_client: AsyncClient, mock_db) -> None:
         """POST /api/v1/auth/login is reachable (returns non-404).
 
-        The endpoint requires a real DB to validate credentials, so it may
-        return 422 (invalid body) or 5xx without overrides. What matters is
-        the path is mounted.
+        Uses unauthenticated_client (mock DB) so no real PostgreSQL needed.
+        mock_db.execute returns a result with scalar_one_or_none()=None
+        (user not found) → 401 Unauthorized. What matters is the path is
+        mounted and the handler is invoked.
         """
-        response = await client.post("/api/v1/auth/login", json={"username": "x", "password": "y"})
+        from unittest.mock import MagicMock  # noqa: PLC0415
+
+        db_result = MagicMock()
+        db_result.scalar_one_or_none.return_value = None
+        mock_db.execute.return_value = db_result
+
+        response = await unauthenticated_client.post(
+            "/api/v1/auth/login", json={"username": "x", "password": "y"}
+        )
         assert response.status_code != 404
 
     async def test_refresh_path_exists(self, client: AsyncClient) -> None:

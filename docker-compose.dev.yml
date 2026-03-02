@@ -1,4 +1,14 @@
 services:
+  db:
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6379:6379"
+    # No password in dev for easier local access
+    command: redis-server
+
   api:
     volumes:
       - ./src:/app/src

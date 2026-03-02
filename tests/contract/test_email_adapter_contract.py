@@ -22,7 +22,6 @@ from src.adapters.email.schemas import (
     Label,
 )
 
-
 # ---------------------------------------------------------------------------
 # MockEmailAdapter — minimal concrete implementation
 # ---------------------------------------------------------------------------
