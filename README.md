@@ -2,10 +2,10 @@
 
 **Intelligent email triage powered by LLMs — classify, route, and draft responses automatically.**
 
-[![Quality Gates](https://github.com/yourusername/mailwise/actions/workflows/quality.yml/badge.svg)](https://github.com/yourusername/mailwise/actions)
+[![Quality Gates](https://github.com/jppuche/mailwise-ai-email-automation/actions/workflows/quality.yml/badge.svg)](https://github.com/jppuche/mailwise-ai-email-automation/actions)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue)
 ![TypeScript](https://img.shields.io/badge/typescript-5.x-blue)
-![Tests](https://img.shields.io/badge/tests-1680%2B-brightgreen)
+![Tests](https://img.shields.io/badge/tests-1780%2B-brightgreen)
 ![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -59,7 +59,7 @@ Each email flows through a **5-stage pipeline** — ingest, classify, route, CRM
 ## Quick Start
 
 ```bash
-git clone https://github.com/yourusername/mailwise.git
+git clone https://github.com/jppuche/mailwise-ai-email-automation.git
 cd mailwise
 cp .env.example .env    # Edit with your API keys
 docker compose up -d    # All 6 services start with health checks
