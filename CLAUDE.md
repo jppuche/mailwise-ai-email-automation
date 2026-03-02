@@ -147,3 +147,4 @@ Configured in .claude/settings.local.json (do not commit).
 - recharts SVG cannot resolve CSS custom properties — Chart.tsx colors must use hex values, not `var(--color-*)`. Encapsulate all recharts imports in `Chart.tsx` only.
 - structlog processor signatures: use `MutableMapping[str, Any]` not `dict[str, Any]` — mypy `list-item` error in `structlog.configure(processors=[...])` otherwise
 - structlog + pytest capsys: `configure_logging()` must be called INSIDE the test body, not in a fixture — `logging.basicConfig(force=True)` attaches handler to pytest's redirected stderr only when called after capsys starts redirecting
+- sys.modules mock exception classes: when narrowing `except SomeError` in tested code, mock modules must assign real exception classes (not MagicMock auto-attrs) — `mock_mod.SomeError = SomeError` — otherwise Python raises `TypeError: catching classes that do not inherit from BaseException`
