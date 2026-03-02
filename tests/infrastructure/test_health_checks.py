@@ -41,6 +41,11 @@ skip_no_docker = pytest.mark.skipif(
     reason="Docker Compose not available",
 )
 
+skip_no_env = pytest.mark.skipif(
+    not (ROOT / ".env").exists(),
+    reason=".env file not present (required by docker-compose.yml)",
+)
+
 
 # ---------------------------------------------------------------------------
 # Static tests — no Docker required, just parse docker-compose.yml on disk
@@ -163,6 +168,7 @@ class TestComposeFileStructure:
 
 @docker
 @skip_no_docker
+@skip_no_env
 class TestDockerHealthChecks:
     """Verify docker-compose health check configuration via docker compose CLI."""
 

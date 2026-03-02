@@ -75,12 +75,16 @@ def _make_routing_rule(
     rule.name = name
     rule.priority = priority
     rule.is_active = is_active
-    rule.conditions = conditions if conditions is not None else [
-        {"field": "action_category", "operator": "eq", "value": "urgent"}
-    ]
-    rule.actions = actions if actions is not None else [
-        {"channel": "slack", "destination": "#support", "template_id": None}
-    ]
+    rule.conditions = (
+        conditions
+        if conditions is not None
+        else [{"field": "action_category", "operator": "eq", "value": "urgent"}]
+    )
+    rule.actions = (
+        actions
+        if actions is not None
+        else [{"channel": "slack", "destination": "#support", "template_id": None}]
+    )
     return rule
 
 
@@ -478,9 +482,7 @@ async def test_dry_run_result_context_is_input_context() -> None:
 async def test_dry_run_would_dispatch_action_definitions() -> None:
     """RoutingActionDef in would_dispatch matches the rule's action definition."""
     rule = _make_routing_rule(
-        actions=[
-            {"channel": "slack", "destination": "#vip", "template_id": "tmpl-vip"}
-        ]
+        actions=[{"channel": "slack", "destination": "#vip", "template_id": "tmpl-vip"}]
     )
     service, _, _ = _make_service()
     db = _make_db([rule])

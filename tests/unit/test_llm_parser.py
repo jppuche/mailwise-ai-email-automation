@@ -68,7 +68,7 @@ class TestTextAroundJson:
 
     def test_text_before_json(self) -> None:
         raw = (
-            'Based on the email content, here is my classification:\n'
+            "Based on the email content, here is my classification:\n"
             '{"action": "reply", "type": "support"}\nThis is a support request.'
         )
         result = parse_classification(raw, ACTIONS, TYPES)
@@ -77,8 +77,7 @@ class TestTextAroundJson:
 
     def test_text_after_json(self) -> None:
         raw = (
-            '{"action": "inform", "type": "notification"}\n'
-            'The above classification is based on...'
+            '{"action": "inform", "type": "notification"}\nThe above classification is based on...'
         )
         result = parse_classification(raw, ACTIONS, TYPES)
         assert result is not None
@@ -118,7 +117,7 @@ class TestThinkingTags:
 
     def test_thinking_tags_stripped(self) -> None:
         raw = (
-            '<think>The email asks about pricing, so this is sales.</think>\n'
+            "<think>The email asks about pricing, so this is sales.</think>\n"
             '{"action": "reply", "type": "sales"}'
         )
         result = parse_classification(raw, ACTIONS, TYPES)
@@ -128,7 +127,7 @@ class TestThinkingTags:
 
     def test_multiline_thinking(self) -> None:
         raw = (
-            '<think>\nLet me analyze...\nThis is a support request.\n</think>\n'
+            "<think>\nLet me analyze...\nThis is a support request.\n</think>\n"
             '{"action": "reply", "type": "support"}'
         )
         result = parse_classification(raw, ACTIONS, TYPES)
@@ -205,7 +204,7 @@ class TestCombinedShapes:
 
     def test_thinking_plus_extra_fields(self) -> None:
         raw = (
-            '<think>This is sales.</think>\n'
+            "<think>This is sales.</think>\n"
             '{"action": "forward", "type": "sales", "reason": "pricing inquiry"}'
         )
         result = parse_classification(raw, ACTIONS, TYPES)

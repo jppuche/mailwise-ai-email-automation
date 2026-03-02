@@ -469,7 +469,8 @@ class TestInvalidSlugFallback:
                 service,
                 "_load_feedback_examples",
                 new=AsyncMock(return_value=[]),
-            ),pytest.raises(CategoryNotFoundError)
+            ),
+            pytest.raises(CategoryNotFoundError),
         ):
             await service.classify_email(email.id, mock_db)
 
@@ -655,7 +656,8 @@ class TestLLMErrors:
                 service,
                 "_load_feedback_examples",
                 new=AsyncMock(return_value=[]),
-            ),pytest.raises(LLMConnectionError)
+            ),
+            pytest.raises(LLMConnectionError),
         ):
             await service.classify_email(email.id, mock_db)
 
@@ -673,9 +675,7 @@ class TestLLMErrors:
     ) -> None:
         """LLMRateLimitError is also caught and causes CLASSIFICATION_FAILED."""
         email = _make_email(EmailState.SANITIZED)
-        mock_llm_adapter.classify.side_effect = LLMRateLimitError(
-            "429", retry_after_seconds=30
-        )
+        mock_llm_adapter.classify.side_effect = LLMRateLimitError("429", retry_after_seconds=30)
 
         with (
             patch.object(
@@ -692,7 +692,8 @@ class TestLLMErrors:
                 service,
                 "_load_feedback_examples",
                 new=AsyncMock(return_value=[]),
-            ),pytest.raises(LLMRateLimitError)
+            ),
+            pytest.raises(LLMRateLimitError),
         ):
             await service.classify_email(email.id, mock_db)
 
@@ -724,7 +725,8 @@ class TestLLMErrors:
                 service,
                 "_load_feedback_examples",
                 new=AsyncMock(return_value=[]),
-            ),pytest.raises(LLMTimeoutError)
+            ),
+            pytest.raises(LLMTimeoutError),
         ):
             await service.classify_email(email.id, mock_db)
 
@@ -780,11 +782,14 @@ class TestStateGuard:
         """Email in FETCHED state raises InvalidStateTransitionError."""
         email = _make_email(EmailState.FETCHED)
 
-        with patch.object(
-            service,
-            "_load_email_or_raise",
-            new=AsyncMock(return_value=email),
-        ), pytest.raises(InvalidStateTransitionError, match="SANITIZED"):
+        with (
+            patch.object(
+                service,
+                "_load_email_or_raise",
+                new=AsyncMock(return_value=email),
+            ),
+            pytest.raises(InvalidStateTransitionError, match="SANITIZED"),
+        ):
             await service.classify_email(email.id, mock_db)
 
     @pytest.mark.asyncio
@@ -796,11 +801,14 @@ class TestStateGuard:
         """Email already in CLASSIFIED state raises InvalidStateTransitionError."""
         email = _make_email(EmailState.CLASSIFIED)
 
-        with patch.object(
-            service,
-            "_load_email_or_raise",
-            new=AsyncMock(return_value=email),
-        ), pytest.raises(InvalidStateTransitionError):
+        with (
+            patch.object(
+                service,
+                "_load_email_or_raise",
+                new=AsyncMock(return_value=email),
+            ),
+            pytest.raises(InvalidStateTransitionError),
+        ):
             await service.classify_email(email.id, mock_db)
 
     @pytest.mark.asyncio
@@ -812,11 +820,14 @@ class TestStateGuard:
         """Email in CLASSIFICATION_FAILED state raises InvalidStateTransitionError."""
         email = _make_email(EmailState.CLASSIFICATION_FAILED)
 
-        with patch.object(
-            service,
-            "_load_email_or_raise",
-            new=AsyncMock(return_value=email),
-        ), pytest.raises(InvalidStateTransitionError):
+        with (
+            patch.object(
+                service,
+                "_load_email_or_raise",
+                new=AsyncMock(return_value=email),
+            ),
+            pytest.raises(InvalidStateTransitionError),
+        ):
             await service.classify_email(email.id, mock_db)
 
 
@@ -835,11 +846,14 @@ class TestEmailNotFound:
         """Missing email raises ValueError from _load_email_or_raise."""
         email_id = uuid.uuid4()
 
-        with patch.object(
-            service,
-            "_load_email_or_raise",
-            new=AsyncMock(side_effect=ValueError(f"Email {email_id} not found")),
-        ), pytest.raises(ValueError, match=str(email_id)):
+        with (
+            patch.object(
+                service,
+                "_load_email_or_raise",
+                new=AsyncMock(side_effect=ValueError(f"Email {email_id} not found")),
+            ),
+            pytest.raises(ValueError, match=str(email_id)),
+        ):
             await service.classify_email(email_id, mock_db)
 
 
@@ -1089,9 +1103,7 @@ class TestClassifyBatch:
 
         call_count = 0
 
-        async def side_effect(
-            email_id: uuid.UUID, db: object
-        ) -> ClassificationServiceResult:
+        async def side_effect(email_id: uuid.UUID, db: object) -> ClassificationServiceResult:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
@@ -1116,9 +1128,7 @@ class TestClassifyBatch:
 
         call_count = 0
 
-        async def side_effect(
-            email_id: uuid.UUID, db: object
-        ) -> ClassificationServiceResult:
+        async def side_effect(email_id: uuid.UUID, db: object) -> ClassificationServiceResult:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
@@ -1143,9 +1153,7 @@ class TestClassifyBatch:
 
         call_count = 0
 
-        async def side_effect(
-            email_id: uuid.UUID, db: object
-        ) -> ClassificationServiceResult:
+        async def side_effect(email_id: uuid.UUID, db: object) -> ClassificationServiceResult:
             nonlocal call_count
             call_count += 1
             if call_count == 1:
@@ -1168,9 +1176,7 @@ class TestClassifyBatch:
         ids = [uuid.uuid4() for _ in range(5)]
         result_ok = _make_service_result()
 
-        with patch.object(
-            service, "classify_email", new=AsyncMock(return_value=result_ok)
-        ):
+        with patch.object(service, "classify_email", new=AsyncMock(return_value=result_ok)):
             batch = await service.classify_batch(ids, mock_db)
 
         assert batch.total == 5
@@ -1185,9 +1191,7 @@ class TestClassifyBatch:
         ids = [uuid.uuid4() for _ in range(4)]
         call_count = 0
 
-        async def alternating(
-            email_id: uuid.UUID, db: object
-        ) -> ClassificationServiceResult:
+        async def alternating(email_id: uuid.UUID, db: object) -> ClassificationServiceResult:
             nonlocal call_count
             call_count += 1
             if call_count % 2 == 0:
@@ -1215,57 +1219,43 @@ class TestHasHeuristicDisagreement:
     def test_same_action_and_type_returns_false(self) -> None:
         """Heuristic agrees with LLM on both → no disagreement."""
         llm = _make_adapter_result(action="respond", type_="complaint")
-        heuristic = HeuristicResult(
-            action_hint="respond", type_hint="complaint", has_opinion=True
-        )
+        heuristic = HeuristicResult(action_hint="respond", type_hint="complaint", has_opinion=True)
         assert _has_heuristic_disagreement(llm, heuristic) is False
 
     def test_different_action_hint_returns_true(self) -> None:
         """Heuristic action_hint differs from LLM action → disagreement."""
         llm = _make_adapter_result(action="respond", type_="complaint")
-        heuristic = HeuristicResult(
-            action_hint="escalate", type_hint=None, has_opinion=True
-        )
+        heuristic = HeuristicResult(action_hint="escalate", type_hint=None, has_opinion=True)
         assert _has_heuristic_disagreement(llm, heuristic) is True
 
     def test_different_type_hint_returns_true(self) -> None:
         """Heuristic type_hint differs from LLM type → disagreement."""
         llm = _make_adapter_result(action="respond", type_="inquiry")
-        heuristic = HeuristicResult(
-            action_hint=None, type_hint="urgent", has_opinion=True
-        )
+        heuristic = HeuristicResult(action_hint=None, type_hint="urgent", has_opinion=True)
         assert _has_heuristic_disagreement(llm, heuristic) is True
 
     def test_both_hints_differ_returns_true(self) -> None:
         """Both action and type hints differ → disagreement."""
         llm = _make_adapter_result(action="respond", type_="inquiry")
-        heuristic = HeuristicResult(
-            action_hint="escalate", type_hint="complaint", has_opinion=True
-        )
+        heuristic = HeuristicResult(action_hint="escalate", type_hint="complaint", has_opinion=True)
         assert _has_heuristic_disagreement(llm, heuristic) is True
 
     def test_only_type_hint_set_matches(self) -> None:
         """Only type_hint set and it matches LLM type → no disagreement."""
         llm = _make_adapter_result(action="respond", type_="complaint")
-        heuristic = HeuristicResult(
-            action_hint=None, type_hint="complaint", has_opinion=True
-        )
+        heuristic = HeuristicResult(action_hint=None, type_hint="complaint", has_opinion=True)
         assert _has_heuristic_disagreement(llm, heuristic) is False
 
     def test_only_action_hint_set_matches(self) -> None:
         """Only action_hint set and it matches LLM action → no disagreement."""
         llm = _make_adapter_result(action="escalate", type_="complaint")
-        heuristic = HeuristicResult(
-            action_hint="escalate", type_hint=None, has_opinion=True
-        )
+        heuristic = HeuristicResult(action_hint="escalate", type_hint=None, has_opinion=True)
         assert _has_heuristic_disagreement(llm, heuristic) is False
 
     def test_has_opinion_false_overrides_hint_mismatch(self) -> None:
         """has_opinion=False → always False, even if hints differ."""
         llm = _make_adapter_result(action="respond", type_="complaint")
-        heuristic = HeuristicResult(
-            action_hint="escalate", type_hint="urgent", has_opinion=False
-        )
+        heuristic = HeuristicResult(action_hint="escalate", type_hint="urgent", has_opinion=False)
         assert _has_heuristic_disagreement(llm, heuristic) is False
 
 

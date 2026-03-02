@@ -143,20 +143,14 @@ class TestConnect:
 
 
 class TestFetchNewMessages:
-    def test_empty_response(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
+    def test_empty_response(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
         mock_service.users().messages().list().execute.return_value = {
             "resultSizeEstimate": 0,
         }
-        result = adapter.fetch_new_messages(
-            since=datetime(2025, 1, 1, tzinfo=UTC), limit=10
-        )
+        result = adapter.fetch_new_messages(since=datetime(2025, 1, 1, tzinfo=UTC), limit=10)
         assert result == []
 
-    def test_single_message(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
+    def test_single_message(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
         raw = _make_raw_message("msg001")
 
         mock_service.users().messages().list().execute.return_value = {
@@ -165,16 +159,12 @@ class TestFetchNewMessages:
         }
         mock_service.users().messages().get().execute.return_value = raw
 
-        result = adapter.fetch_new_messages(
-            since=datetime(2025, 1, 1, tzinfo=UTC), limit=10
-        )
+        result = adapter.fetch_new_messages(since=datetime(2025, 1, 1, tzinfo=UTC), limit=10)
         assert len(result) == 1
         assert isinstance(result[0], EmailMessage)
         assert result[0].gmail_message_id == "msg001"
 
-    def test_uses_after_query(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
+    def test_uses_after_query(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
         since = datetime(2025, 1, 20, 10, 0, tzinfo=UTC)
 
         mock_service.users().messages().list().execute.return_value = {
@@ -186,9 +176,7 @@ class TestFetchNewMessages:
         # hard, so we verify the method was invoked
         assert mock_service.users().messages().list.called
 
-    def test_pagination(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
+    def test_pagination(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
         raw = _make_raw_message("msg001")
 
         # First page returns a nextPageToken, second does not
@@ -205,9 +193,7 @@ class TestFetchNewMessages:
         ]
         mock_service.users().messages().get().execute.return_value = raw
 
-        result = adapter.fetch_new_messages(
-            since=datetime(2025, 1, 1, tzinfo=UTC), limit=10
-        )
+        result = adapter.fetch_new_messages(since=datetime(2025, 1, 1, tzinfo=UTC), limit=10)
         assert len(result) == 2
 
     def test_parse_failure_skips_message(
@@ -228,9 +214,7 @@ class TestFetchNewMessages:
             bad_raw,
         ]
 
-        result = adapter.fetch_new_messages(
-            since=datetime(2025, 1, 1, tzinfo=UTC), limit=10
-        )
+        result = adapter.fetch_new_messages(since=datetime(2025, 1, 1, tzinfo=UTC), limit=10)
         # Only the good message should be returned
         assert len(result) == 1
         assert result[0].gmail_message_id == "msg001"
@@ -242,16 +226,12 @@ class TestFetchNewMessages:
 
     def test_limit_out_of_range_raises(self, adapter: GmailAdapter) -> None:
         with pytest.raises(ValueError, match="limit"):
-            adapter.fetch_new_messages(
-                since=datetime.now(tz=UTC), limit=0
-            )
+            adapter.fetch_new_messages(since=datetime.now(tz=UTC), limit=0)
 
     def test_not_connected_raises(self) -> None:
         adapter = GmailAdapter()
         with pytest.raises(EmailAdapterError, match="not connected"):
-            adapter.fetch_new_messages(
-                since=datetime.now(tz=UTC), limit=10
-            )
+            adapter.fetch_new_messages(since=datetime.now(tz=UTC), limit=10)
 
 
 # ---------------------------------------------------------------------------
@@ -260,38 +240,30 @@ class TestFetchNewMessages:
 
 
 class TestHttpErrorMapping:
-    def test_401_raises_auth_error(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
-        mock_service.users().messages().list().execute.side_effect = (
-            _make_http_error(401, "Unauthorized")
+    def test_401_raises_auth_error(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
+        mock_service.users().messages().list().execute.side_effect = _make_http_error(
+            401, "Unauthorized"
         )
         with pytest.raises(AuthError):
-            adapter.fetch_new_messages(
-                since=datetime.now(tz=UTC), limit=10
-            )
+            adapter.fetch_new_messages(since=datetime.now(tz=UTC), limit=10)
 
     def test_429_raises_rate_limit_error(
         self, adapter: GmailAdapter, mock_service: MagicMock
     ) -> None:
-        mock_service.users().messages().list().execute.side_effect = (
-            _make_http_error(429, "Too Many Requests")
+        mock_service.users().messages().list().execute.side_effect = _make_http_error(
+            429, "Too Many Requests"
         )
         with pytest.raises(RateLimitError):
-            adapter.fetch_new_messages(
-                since=datetime.now(tz=UTC), limit=10
-            )
+            adapter.fetch_new_messages(since=datetime.now(tz=UTC), limit=10)
 
     def test_503_raises_connection_error(
         self, adapter: GmailAdapter, mock_service: MagicMock
     ) -> None:
-        mock_service.users().messages().list().execute.side_effect = (
-            _make_http_error(503, "Service Unavailable")
+        mock_service.users().messages().list().execute.side_effect = _make_http_error(
+            503, "Service Unavailable"
         )
         with pytest.raises(EmailConnectionError):
-            adapter.fetch_new_messages(
-                since=datetime.now(tz=UTC), limit=10
-            )
+            adapter.fetch_new_messages(since=datetime.now(tz=UTC), limit=10)
 
 
 # ---------------------------------------------------------------------------
@@ -300,9 +272,7 @@ class TestHttpErrorMapping:
 
 
 class TestMarkAsProcessed:
-    def test_calls_modify(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
+    def test_calls_modify(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
         mock_service.users().messages().modify().execute.return_value = {}
 
         adapter.mark_as_processed("msg001")
@@ -319,23 +289,13 @@ class TestMarkAsProcessed:
 
 
 class TestCreateDraft:
-    def test_returns_draft_id(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
-        mock_service.users().drafts().create().execute.return_value = {
-            "id": "draft_001"
-        }
-        result = adapter.create_draft(
-            to="test@example.com", subject="Test", body="Body"
-        )
+    def test_returns_draft_id(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
+        mock_service.users().drafts().create().execute.return_value = {"id": "draft_001"}
+        result = adapter.create_draft(to="test@example.com", subject="Test", body="Body")
         assert result == DraftId("draft_001")
 
-    def test_in_reply_to_header(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
-        mock_service.users().drafts().create().execute.return_value = {
-            "id": "draft_002"
-        }
+    def test_in_reply_to_header(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
+        mock_service.users().drafts().create().execute.return_value = {"id": "draft_002"}
         adapter.create_draft(
             to="test@example.com",
             subject="Re: Test",
@@ -355,8 +315,8 @@ class TestCreateDraft:
     def test_http_error_raises_draft_creation_error(
         self, adapter: GmailAdapter, mock_service: MagicMock
     ) -> None:
-        mock_service.users().drafts().create().execute.side_effect = (
-            _make_http_error(400, "Bad Request")
+        mock_service.users().drafts().create().execute.side_effect = _make_http_error(
+            400, "Bad Request"
         )
         with pytest.raises(DraftCreationError):
             adapter.create_draft(to="a@b.com", subject="S", body="B")
@@ -368,9 +328,7 @@ class TestCreateDraft:
 
 
 class TestGetLabels:
-    def test_returns_labels(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
+    def test_returns_labels(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
         mock_service.users().labels().list().execute.return_value = {
             "labels": [
                 {"id": "INBOX", "name": "Inbox", "type": "system"},
@@ -385,8 +343,8 @@ class TestGetLabels:
     def test_http_error_raises_label_error(
         self, adapter: GmailAdapter, mock_service: MagicMock
     ) -> None:
-        mock_service.users().labels().list().execute.side_effect = (
-            _make_http_error(403, "Forbidden")
+        mock_service.users().labels().list().execute.side_effect = _make_http_error(
+            403, "Forbidden"
         )
         with pytest.raises(LabelError):
             adapter.get_labels()
@@ -398,9 +356,7 @@ class TestGetLabels:
 
 
 class TestApplyLabel:
-    def test_calls_modify(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
+    def test_calls_modify(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
         mock_service.users().messages().modify().execute.return_value = {}
         adapter.apply_label("msg001", "Label_1")
         assert mock_service.users().messages().modify.called
@@ -414,8 +370,8 @@ class TestApplyLabel:
     def test_http_error_raises_label_error(
         self, adapter: GmailAdapter, mock_service: MagicMock
     ) -> None:
-        mock_service.users().messages().modify().execute.side_effect = (
-            _make_http_error(404, "Not Found")
+        mock_service.users().messages().modify().execute.side_effect = _make_http_error(
+            404, "Not Found"
         )
         with pytest.raises(LabelError):
             adapter.apply_label("msg001", "Label_1")
@@ -427,23 +383,15 @@ class TestApplyLabel:
 
 
 class TestTestConnection:
-    def test_success(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
-        mock_service.users().getProfile().execute.return_value = {
-            "emailAddress": "user@gmail.com"
-        }
+    def test_success(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
+        mock_service.users().getProfile().execute.return_value = {"emailAddress": "user@gmail.com"}
         result = adapter.test_connection()
         assert result.connected is True
         assert result.account == "user@gmail.com"
         assert result.error is None
 
-    def test_failure_returns_result(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
-        mock_service.users().getProfile().execute.side_effect = Exception(
-            "network down"
-        )
+    def test_failure_returns_result(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
+        mock_service.users().getProfile().execute.side_effect = Exception("network down")
         result = adapter.test_connection()
         assert result.connected is False
         assert result.error == "network down"
@@ -454,12 +402,8 @@ class TestTestConnection:
         assert result.connected is False
         assert "not connected" in (result.error or "").lower()
 
-    def test_never_raises(
-        self, adapter: GmailAdapter, mock_service: MagicMock
-    ) -> None:
-        mock_service.users().getProfile().execute.side_effect = RuntimeError(
-            "unexpected"
-        )
+    def test_never_raises(self, adapter: GmailAdapter, mock_service: MagicMock) -> None:
+        mock_service.users().getProfile().execute.side_effect = RuntimeError("unexpected")
         # Should NOT raise — returns ConnectionTestResult
         result = adapter.test_connection()
         assert isinstance(result, ConnectionTestResult)

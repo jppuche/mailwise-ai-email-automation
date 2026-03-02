@@ -93,4 +93,5 @@ jobs:
     needs: [lint, typecheck, test, frontend]
     steps:
       - uses: actions/checkout@v4
+      - run: cp .env.example .env
       - run: docker compose build

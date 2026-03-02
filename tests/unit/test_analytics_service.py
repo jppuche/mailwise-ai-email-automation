@@ -252,9 +252,7 @@ class TestGetAccuracy:
         ]
 
         with patch("src.services.analytics_service.get_settings", return_value=_make_settings()):
-            _, _, accuracy_pct = await service.get_accuracy(
-                date(2026, 1, 1), date(2026, 1, 31), db
-            )
+            _, _, accuracy_pct = await service.get_accuracy(date(2026, 1, 1), date(2026, 1, 31), db)
 
         assert accuracy_pct == 0.0
 
@@ -305,9 +303,12 @@ class TestGetRoutingStats:
         ]
 
         with patch("src.services.analytics_service.get_settings", return_value=_make_settings()):
-            channels, total_dispatched, total_failed, unrouted_count = (
-                await service.get_routing_stats(date(2026, 1, 1), date(2026, 1, 31), db)
-            )
+            (
+                channels,
+                total_dispatched,
+                total_failed,
+                unrouted_count,
+            ) = await service.get_routing_stats(date(2026, 1, 1), date(2026, 1, 31), db)
 
         assert len(channels) == 1
         assert channels[0][0] == "slack"
@@ -329,9 +330,12 @@ class TestGetRoutingStats:
         ]
 
         with patch("src.services.analytics_service.get_settings", return_value=_make_settings()):
-            channels, total_dispatched, total_failed, unrouted_count = (
-                await service.get_routing_stats(date(2026, 1, 1), date(2026, 1, 31), db)
-            )
+            (
+                channels,
+                total_dispatched,
+                total_failed,
+                unrouted_count,
+            ) = await service.get_routing_stats(date(2026, 1, 1), date(2026, 1, 31), db)
 
         assert channels == []
         assert total_dispatched == 0

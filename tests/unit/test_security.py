@@ -20,6 +20,7 @@ import pytest
 from jose import JWTError
 from jose import jwt as jose_jwt
 
+from src.core.config import get_settings
 from src.core.exceptions import AuthenticationError
 from src.core.security import (
     TokenPayload,
@@ -34,7 +35,6 @@ from src.core.security import (
 # Constants
 # ---------------------------------------------------------------------------
 
-_TEST_SECRET = "test-secret-key-for-testing-only"
 _TEST_ALGORITHM = "HS256"
 _PLAIN_PASSWORD = "correct-horse-battery-staple"
 
@@ -137,7 +137,9 @@ class TestCreateAccessToken:
         token = create_access_token(user_id, "admin")
 
         # jose_jwt.decode raises if the token is invalid.
-        decoded = jose_jwt.decode(token, _TEST_SECRET, algorithms=[_TEST_ALGORITHM])
+        decoded = jose_jwt.decode(
+            token, get_settings().jwt_secret_key, algorithms=[_TEST_ALGORITHM]
+        )
 
         assert isinstance(decoded, dict)
 
@@ -146,7 +148,9 @@ class TestCreateAccessToken:
         user_id = uuid.uuid4()
         token = create_access_token(user_id, "reviewer")
 
-        decoded = jose_jwt.decode(token, _TEST_SECRET, algorithms=[_TEST_ALGORITHM])
+        decoded = jose_jwt.decode(
+            token, get_settings().jwt_secret_key, algorithms=[_TEST_ALGORITHM]
+        )
 
         assert decoded["sub"] == str(user_id)
 
@@ -154,7 +158,9 @@ class TestCreateAccessToken:
         user_id = uuid.uuid4()
         token = create_access_token(user_id, "admin")
 
-        decoded = jose_jwt.decode(token, _TEST_SECRET, algorithms=[_TEST_ALGORITHM])
+        decoded = jose_jwt.decode(
+            token, get_settings().jwt_secret_key, algorithms=[_TEST_ALGORITHM]
+        )
 
         assert decoded["role"] == "admin"
 
@@ -162,7 +168,9 @@ class TestCreateAccessToken:
         user_id = uuid.uuid4()
         token = create_access_token(user_id, "reviewer")
 
-        decoded = jose_jwt.decode(token, _TEST_SECRET, algorithms=[_TEST_ALGORITHM])
+        decoded = jose_jwt.decode(
+            token, get_settings().jwt_secret_key, algorithms=[_TEST_ALGORITHM]
+        )
         exp: int = decoded["exp"]
         now = int(datetime.now(UTC).timestamp())
 
@@ -205,7 +213,9 @@ class TestVerifyAccessToken:
             "role": "reviewer",
             "exp": past_exp,
         }
-        expired_token = jose_jwt.encode(expired_payload, _TEST_SECRET, algorithm=_TEST_ALGORITHM)
+        expired_token = jose_jwt.encode(
+            expired_payload, get_settings().jwt_secret_key, algorithm=_TEST_ALGORITHM
+        )
 
         with pytest.raises(AuthenticationError):
             verify_access_token(expired_token)
@@ -239,7 +249,9 @@ class TestVerifyAccessToken:
             "role": "reviewer",
             "exp": future_exp,
         }
-        token = jose_jwt.encode(payload_no_sub, _TEST_SECRET, algorithm=_TEST_ALGORITHM)
+        token = jose_jwt.encode(
+            payload_no_sub, get_settings().jwt_secret_key, algorithm=_TEST_ALGORITHM
+        )
 
         with pytest.raises(AuthenticationError):
             verify_access_token(token)
@@ -252,7 +264,9 @@ class TestVerifyAccessToken:
             "sub": str(user_id),
             "exp": future_exp,
         }
-        token = jose_jwt.encode(payload_no_role, _TEST_SECRET, algorithm=_TEST_ALGORITHM)
+        token = jose_jwt.encode(
+            payload_no_role, get_settings().jwt_secret_key, algorithm=_TEST_ALGORITHM
+        )
 
         with pytest.raises(AuthenticationError):
             verify_access_token(token)
@@ -289,7 +303,7 @@ class TestCreateRefreshToken:
 
         with pytest.raises(JWTError):
             # jose_jwt.decode raises JWTError when the token is not a valid JWT structure.
-            jose_jwt.decode(token, _TEST_SECRET, algorithms=[_TEST_ALGORITHM])
+            jose_jwt.decode(token, get_settings().jwt_secret_key, algorithms=[_TEST_ALGORITHM])
 
 
 # ---------------------------------------------------------------------------

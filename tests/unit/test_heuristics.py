@@ -417,23 +417,17 @@ class TestMultipleRulesFire:
 
 class TestCaseInsensitivity:
     @pytest.mark.parametrize("subject", ["URGENT", "urgent", "Urgent", "uRgEnT"])
-    def test_urgent_case_variants(
-        self, classifier: HeuristicClassifier, subject: str
-    ) -> None:
+    def test_urgent_case_variants(self, classifier: HeuristicClassifier, subject: str) -> None:
         result = _classify(classifier, _make_request(subject=subject))
         assert "urgent_keyword" in result.rules_fired
 
     @pytest.mark.parametrize("body", ["DISSATISFIED", "dissatisfied", "Dissatisfied"])
-    def test_complaint_case_variants(
-        self, classifier: HeuristicClassifier, body: str
-    ) -> None:
+    def test_complaint_case_variants(self, classifier: HeuristicClassifier, body: str) -> None:
         result = _classify(classifier, _make_request(body=body))
         assert "complaint_keyword" in result.rules_fired
 
     @pytest.mark.parametrize("subject", ["LEGAL", "Legal", "legal"])
-    def test_escalate_case_variants(
-        self, classifier: HeuristicClassifier, subject: str
-    ) -> None:
+    def test_escalate_case_variants(self, classifier: HeuristicClassifier, subject: str) -> None:
         result = _classify(classifier, _make_request(subject=subject))
         assert "escalate_keyword" in result.rules_fired
 

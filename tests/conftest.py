@@ -42,9 +42,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             if "integration" in item.keywords:
                 item.add_marker(skip_integration)
     if not config.getoption("--run-e2e"):
-        skip_e2e = pytest.mark.skip(
-            reason="Requires infrastructure — run with --run-e2e"
-        )
+        skip_e2e = pytest.mark.skip(reason="Requires infrastructure — run with --run-e2e")
         for item in items:
             if "e2e" in item.keywords:
                 item.add_marker(skip_e2e)

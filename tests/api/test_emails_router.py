@@ -119,9 +119,9 @@ class TestListEmails:
         email = _make_email()
 
         mock_db.execute.side_effect = [
-            _scalar_one_result(1),           # COUNT
-            _scalars_all_result([email]),    # paginated emails
-            _scalars_all_result([]),         # classifications batch
+            _scalar_one_result(1),  # COUNT
+            _scalars_all_result([email]),  # paginated emails
+            _scalars_all_result([]),  # classifications batch
         ]
 
         resp = await admin_client.get(f"{BASE}/")
@@ -166,8 +166,8 @@ class TestListEmails:
     ) -> None:
         """Empty result set: items=[], total=0, pages=0."""
         mock_db.execute.side_effect = [
-            _scalar_one_result(0),       # COUNT = 0
-            _scalars_all_result([]),     # no emails
+            _scalar_one_result(0),  # COUNT = 0
+            _scalars_all_result([]),  # no emails
         ]
 
         resp = await admin_client.get(f"{BASE}/")
@@ -221,8 +221,8 @@ class TestListEmails:
             _scalar_one_result(1),
             _scalars_all_result([email]),
             _scalars_all_result([clf]),
-            _scalars_all_result([action_cat]),   # ActionCategory batch
-            _scalars_all_result([type_cat]),     # TypeCategory batch
+            _scalars_all_result([action_cat]),  # ActionCategory batch
+            _scalars_all_result([type_cat]),  # TypeCategory batch
         ]
 
         resp = await admin_client.get(f"{BASE}/")
@@ -252,11 +252,11 @@ class TestGetEmail:
         email_id = email.id
 
         mock_db.execute.side_effect = [
-            _scalar_result(email),       # Email lookup
-            _scalar_result(None),        # ClassificationResult (none)
-            _scalars_all_result([]),     # RoutingActions
-            _scalar_result(None),        # CRMSyncRecord
-            _scalar_result(None),        # Draft
+            _scalar_result(email),  # Email lookup
+            _scalar_result(None),  # ClassificationResult (none)
+            _scalars_all_result([]),  # RoutingActions
+            _scalar_result(None),  # CRMSyncRecord
+            _scalar_result(None),  # Draft
         ]
 
         resp = await admin_client.get(f"{BASE}/{email_id}")
@@ -300,13 +300,13 @@ class TestGetEmail:
         type_cat = _make_type_cat(slug="inquiry")
 
         mock_db.execute.side_effect = [
-            _scalar_result(email),         # Email lookup
-            _scalar_result(clf),           # ClassificationResult
-            _scalar_result(action_cat),    # ActionCategory
-            _scalar_result(type_cat),      # TypeCategory
-            _scalars_all_result([]),       # RoutingActions
-            _scalar_result(None),          # CRMSyncRecord
-            _scalar_result(None),          # Draft
+            _scalar_result(email),  # Email lookup
+            _scalar_result(clf),  # ClassificationResult
+            _scalar_result(action_cat),  # ActionCategory
+            _scalar_result(type_cat),  # TypeCategory
+            _scalars_all_result([]),  # RoutingActions
+            _scalar_result(None),  # CRMSyncRecord
+            _scalar_result(None),  # Draft
         ]
 
         resp = await reviewer_client.get(f"{BASE}/{email.id}")
@@ -325,11 +325,11 @@ class TestGetEmail:
         email = _make_email(state=EmailState.SANITIZED)
 
         mock_db.execute.side_effect = [
-            _scalar_result(email),     # Email lookup
-            _scalar_result(None),      # ClassificationResult: absent
-            _scalars_all_result([]),   # RoutingActions
-            _scalar_result(None),      # CRMSyncRecord
-            _scalar_result(None),      # Draft
+            _scalar_result(email),  # Email lookup
+            _scalar_result(None),  # ClassificationResult: absent
+            _scalars_all_result([]),  # RoutingActions
+            _scalar_result(None),  # CRMSyncRecord
+            _scalar_result(None),  # Draft
         ]
 
         resp = await admin_client.get(f"{BASE}/{email.id}")
@@ -515,9 +515,9 @@ class TestGetClassification:
         type_cat = _make_type_cat(slug="billing")
 
         mock_db.execute.side_effect = [
-            _scalar_result(clf),          # ClassificationResult
-            _scalar_result(action_cat),   # ActionCategory
-            _scalar_result(type_cat),     # TypeCategory
+            _scalar_result(clf),  # ClassificationResult
+            _scalar_result(action_cat),  # ActionCategory
+            _scalar_result(type_cat),  # TypeCategory
         ]
 
         resp = await admin_client.get(f"{BASE}/{email_id}/classification")
@@ -587,10 +587,10 @@ class TestSubmitFeedback:
         corrected_type_cat = _make_type_cat(slug="inquiry")
 
         mock_db.execute.side_effect = [
-            _scalar_result(email),                 # Email existence check
-            _scalar_result(clf),                   # ClassificationResult
+            _scalar_result(email),  # Email existence check
+            _scalar_result(clf),  # ClassificationResult
             _scalar_result(corrected_action_cat),  # corrected_action slug resolve
-            _scalar_result(corrected_type_cat),    # corrected_type slug resolve
+            _scalar_result(corrected_type_cat),  # corrected_type slug resolve
         ]
 
         resp = await reviewer_client.post(
@@ -630,7 +630,7 @@ class TestSubmitFeedback:
 
         mock_db.execute.side_effect = [
             _scalar_result(email),  # Email exists
-            _scalar_result(None),   # Classification: absent
+            _scalar_result(None),  # Classification: absent
         ]
 
         resp = await reviewer_client.post(
@@ -650,9 +650,9 @@ class TestSubmitFeedback:
         clf = _make_classification(email_id=email.id)
 
         mock_db.execute.side_effect = [
-            _scalar_result(email),   # Email exists
-            _scalar_result(clf),     # Classification exists
-            _scalar_result(None),    # corrected_action slug: not found
+            _scalar_result(email),  # Email exists
+            _scalar_result(clf),  # Classification exists
+            _scalar_result(None),  # corrected_action slug: not found
         ]
 
         resp = await admin_client.post(
@@ -673,10 +673,10 @@ class TestSubmitFeedback:
         corrected_action_cat = _make_action_cat(slug="reply")
 
         mock_db.execute.side_effect = [
-            _scalar_result(email),                 # Email exists
-            _scalar_result(clf),                   # Classification exists
+            _scalar_result(email),  # Email exists
+            _scalar_result(clf),  # Classification exists
             _scalar_result(corrected_action_cat),  # corrected_action OK
-            _scalar_result(None),                  # corrected_type: not found
+            _scalar_result(None),  # corrected_type: not found
         ]
 
         resp = await admin_client.post(

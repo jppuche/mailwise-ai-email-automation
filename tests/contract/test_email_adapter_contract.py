@@ -33,13 +33,9 @@ class MockEmailAdapter(EmailAdapter):
     def connect(self, credentials: EmailCredentials) -> ConnectionStatus:
         if not credentials.client_id:
             raise ValueError("client_id must not be empty")
-        return ConnectionStatus(
-            connected=True, account="mock@example.com", scopes=[]
-        )
+        return ConnectionStatus(connected=True, account="mock@example.com", scopes=[])
 
-    def fetch_new_messages(
-        self, since: datetime, limit: int
-    ) -> list[EmailMessage]:
+    def fetch_new_messages(self, since: datetime, limit: int) -> list[EmailMessage]:
         if since.tzinfo is None:
             raise ValueError("since must be a timezone-aware datetime")
         if not (1 <= limit <= 500):
@@ -107,16 +103,12 @@ class TestABCSatisfiability:
 
     def test_fetch_returns_list_of_email_message(self) -> None:
         adapter = MockEmailAdapter()
-        result = adapter.fetch_new_messages(
-            since=datetime.now(tz=UTC), limit=10
-        )
+        result = adapter.fetch_new_messages(since=datetime.now(tz=UTC), limit=10)
         assert isinstance(result, list)
 
     def test_create_draft_returns_draft_id(self) -> None:
         adapter = MockEmailAdapter()
-        result = adapter.create_draft(
-            to="test@example.com", subject="S", body="B"
-        )
+        result = adapter.create_draft(to="test@example.com", subject="S", body="B")
         assert isinstance(result, str)
 
     def test_get_labels_returns_list_of_label(self) -> None:

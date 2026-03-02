@@ -161,12 +161,8 @@ def _make_rule_mock(
     rule.name = name
     rule.priority = priority
     rule.is_active = is_active
-    rule.conditions = [
-        {"field": "action_category", "operator": "eq", "value": action_slug}
-    ]
-    rule.actions = [
-        {"channel": channel, "destination": destination, "template_id": None}
-    ]
+    rule.conditions = [{"field": "action_category", "operator": "eq", "value": action_slug}]
+    rule.actions = [{"channel": channel, "destination": destination, "template_id": None}]
     return rule
 
 
@@ -220,6 +216,7 @@ def _make_service(
 # DB mock builder
 # ---------------------------------------------------------------------------
 
+
 def _make_scalar_result(value: object) -> MagicMock:
     r = MagicMock()
     r.scalar_one_or_none.return_value = value
@@ -266,11 +263,11 @@ def _make_db(
     db.rollback = AsyncMock()
 
     side_effects: list[object] = [
-        _make_scalar_result(email),          # 1 _load_email_or_raise
-        _make_scalar_result(cr),             # 2 ClassificationResult
-        _make_scalar_result(action_slug),    # 3 action_slug
-        _make_scalar_result(type_slug),      # 4 type_slug
-        _make_scalars_result(rules),         # 5 _load_active_rules
+        _make_scalar_result(email),  # 1 _load_email_or_raise
+        _make_scalar_result(cr),  # 2 ClassificationResult
+        _make_scalar_result(action_slug),  # 3 action_slug
+        _make_scalar_result(type_slug),  # 4 type_slug
+        _make_scalars_result(rules),  # 5 _load_active_rules
     ]
     # 6+: one idempotency check per action across all rules
     for rule in rules:
@@ -579,8 +576,8 @@ async def test_route_missing_classification_result_raises() -> None:
     db.commit = AsyncMock()
     db.add = MagicMock()
     db.execute.side_effect = [
-        _make_scalar_result(email),   # email found
-        _make_scalar_result(None),    # ClassificationResult not found
+        _make_scalar_result(email),  # email found
+        _make_scalar_result(None),  # ClassificationResult not found
     ]
     service = _make_service()
 

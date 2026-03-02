@@ -373,9 +373,7 @@ async def test_sync_crm_auth_error_on_lookup_is_reraised() -> None:
 async def test_sync_crm_rate_limit_error_on_lookup_is_reraised() -> None:
     """CRMRateLimitError on lookup propagates to caller for retry logic."""
     adapter = _make_adapter()
-    adapter.lookup_contact.side_effect = CRMRateLimitError(
-        "rate limited", retry_after_seconds=30
-    )
+    adapter.lookup_contact.side_effect = CRMRateLimitError("rate limited", retry_after_seconds=30)
 
     db = _make_db_no_record()
     service = _make_service(adapter=adapter)
@@ -527,9 +525,7 @@ async def test_sync_field_update_partial_failure_continues() -> None:
 
     db = _make_db_no_record()
     service = _make_service(adapter=adapter)
-    request = _make_request(
-        field_updates={"hs_lead_status": "QUALIFIED", "industry": "Technology"}
-    )
+    request = _make_request(field_updates={"hs_lead_status": "QUALIFIED", "industry": "Technology"})
 
     result = await service.sync(request, db)
 
@@ -627,9 +623,7 @@ async def test_sync_auth_error_during_field_update_is_reraised() -> None:
 
     db = _make_db_no_record()
     service = _make_service(adapter=adapter)
-    request = _make_request(
-        field_updates={"field_one": "val1", "field_two": "val2"}
-    )
+    request = _make_request(field_updates={"field_one": "val1", "field_two": "val2"})
 
     with pytest.raises(CRMAuthError):
         await service.sync(request, db)

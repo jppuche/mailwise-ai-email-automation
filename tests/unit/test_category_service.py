@@ -299,8 +299,8 @@ class TestDeleteActionCategory:
 
         db.execute.side_effect = [
             _scalar_result(cat),
-            _scalar_result(0),   # cr_count
-            _scalar_result(2),   # fb_count = 2
+            _scalar_result(0),  # cr_count
+            _scalar_result(2),  # fb_count = 2
         ]
 
         with pytest.raises(CategoryInUseError) as exc_info:
