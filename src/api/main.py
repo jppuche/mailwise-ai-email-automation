@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # WARNING-02: warn when org system prompt is unusually long (>2000 chars)
     if len(_settings.draft_org_system_prompt) > 2000:
-        _startup_logger.warning(  # type: ignore[no-any-return]
+        _startup_logger.warning(
             "draft_org_system_prompt_long",
             length=len(_settings.draft_org_system_prompt),
         )
