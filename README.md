@@ -2,7 +2,7 @@
 
 **Intelligent email triage powered by LLMs — classify, route, and draft responses automatically.**
 
-[![Quality Gates](https://github.com/jppuche/mailwise-ai-email-automation/actions/workflows/quality.yml/badge.svg)](https://github.com/jppuche/mailwise-ai-email-automation/actions)
+[![Quality Gates](https://github.com/jppuche/mailwise-ai-email-automation/workflows/Quality%20Gates/badge.svg)](https://github.com/jppuche/mailwise-ai-email-automation/actions)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-blue)
 ![TypeScript](https://img.shields.io/badge/typescript-5.x-blue)
 ![Tests](https://img.shields.io/badge/tests-1780%2B-brightgreen)
