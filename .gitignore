@@ -1,15 +1,5 @@
-# Claude Code local settings (not for sharing)
-.claude/settings.local.json
-
-# Security audit logs
-.claude/security/audit-*.log
-
 # Local project memory
 *.local.md
-
-# Lorekeeper session markers
-.claude/lorekeeper-pending.json
-.claude/lorekeeper-session-active.marker
 
 # Secrets
 secrets/
@@ -35,6 +25,31 @@ build/
 node_modules/
 frontend/dist/
 
+# Test artifacts
+.coverage
+htmlcov/
+test_output.txt
+
+# Temporary scripts
+scripts/frontend-install.sh
+
+# Windows artifacts
+alembic.ini;C/
+alembic;C/
+
 # OS
 .DS_Store
 Thumbs.db
+
+# Meta-project (Claude Code) — kept locally, not published
+CLAUDE.md
+.claude/
+_workflow/
+docs/SCRATCHPAD.md
+docs/CHANGELOG-DEV.md
+docs/AGENT-COORDINATION.md
+docs/LESSONS-LEARNED.md
+docs/STATUS.md
+docs/handoffs/
+docs/specs/
+docs/ignite-reference.md
