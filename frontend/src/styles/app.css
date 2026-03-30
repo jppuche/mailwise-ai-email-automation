@@ -1,0 +1,280 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ========================================
+   mailwise design tokens
+   ======================================== */
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+}
+
+/* ========================================
+   Light theme (default) — Mboard-inspired
+   Navy sidebar + orange accent + light content
+   ======================================== */
+:root {
+  --background: oklch(0.971 0.006 260);
+  --foreground: oklch(0.145 0.03 265);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0.03 265);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0.03 265);
+
+  --primary: oklch(0.7 0.17 55);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.971 0.006 260);
+  --secondary-foreground: oklch(0.145 0.03 265);
+
+  --muted: oklch(0.955 0.008 260);
+  --muted-foreground: oklch(0.555 0.014 260);
+
+  --accent: oklch(0.98 0.004 270);
+  --accent-foreground: oklch(0.145 0.03 265);
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(0.935 0.012 260);
+  --input: oklch(0.935 0.012 260);
+  --ring: oklch(0.7 0.17 55);
+
+  /* Semantic colors */
+  --success: oklch(0.723 0.219 149);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.746 0.16 70);
+  --warning-foreground: oklch(1 0 0);
+  --info: oklch(0.588 0.213 264);
+  --info-foreground: oklch(1 0 0);
+
+  /* Sidebar — deep navy */
+  --sidebar-background: oklch(0.145 0.045 272);
+  --sidebar-foreground: oklch(0.646 0.025 265);
+  --sidebar-primary: oklch(0.7 0.17 55);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.735 0.149 55 / 12%);
+  --sidebar-accent-foreground: oklch(0.7 0.17 55);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.7 0.17 55);
+
+  /* Chart colors — navy + orange dual palette */
+  --chart-1: oklch(0.25 0.08 269);
+  --chart-2: oklch(0.7 0.17 55);
+  --chart-3: oklch(0.723 0.219 149);
+  --chart-4: oklch(0.588 0.213 264);
+  --chart-5: oklch(0.577 0.245 27.325);
+
+  /* Accent navy — for headings and chart series 1 */
+  --accent-navy: oklch(0.25 0.08 269);
+
+  /* Shadow scale */
+  --shadow-card: 0 2px 8px rgba(15, 21, 53, 0.06), 0 1px 3px rgba(15, 21, 53, 0.04);
+  --shadow-elevated: 0 8px 24px rgba(15, 21, 53, 0.10), 0 2px 8px rgba(15, 21, 53, 0.06);
+
+  --radius: 0.75rem;
+  --sidebar: oklch(0.971 0.006 260);
+}
+
+/* ========================================
+   Dark theme — Navy deep variant
+   ======================================== */
+.dark {
+  --background: oklch(0.115 0.035 270);
+  --foreground: oklch(0.94 0.01 255);
+
+  --card: oklch(0.168 0.05 272);
+  --card-foreground: oklch(0.94 0.01 255);
+
+  --popover: oklch(0.168 0.05 272);
+  --popover-foreground: oklch(0.94 0.01 255);
+
+  --primary: oklch(0.77 0.145 55);
+  --primary-foreground: oklch(0.115 0.035 270);
+
+  --secondary: oklch(0.2 0.04 270);
+  --secondary-foreground: oklch(0.94 0.01 255);
+
+  --muted: oklch(0.2 0.04 270);
+  --muted-foreground: oklch(0.646 0.025 265);
+
+  --accent: oklch(0.2 0.04 270);
+  --accent-foreground: oklch(0.94 0.01 255);
+
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(1 0 0);
+
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.77 0.145 55);
+
+  /* Semantic colors — dark */
+  --success: oklch(0.808 0.19 149.571);
+  --success-foreground: oklch(0.115 0.035 270);
+  --warning: oklch(0.852 0.163 84.429);
+  --warning-foreground: oklch(0.115 0.035 270);
+  --info: oklch(0.8 0.154 264);
+  --info-foreground: oklch(0.115 0.035 270);
+
+  /* Sidebar — darker navy */
+  --sidebar-background: oklch(0.09 0.03 270);
+  --sidebar-foreground: oklch(0.646 0.025 265);
+  --sidebar-primary: oklch(0.77 0.145 55);
+  --sidebar-primary-foreground: oklch(0.94 0.01 255);
+  --sidebar-accent: oklch(0.77 0.145 55 / 12%);
+  --sidebar-accent-foreground: oklch(0.77 0.145 55);
+  --sidebar-border: oklch(1 0 0 / 6%);
+  --sidebar-ring: oklch(0.77 0.145 55);
+
+  /* Chart colors — dark brightened */
+  --chart-1: oklch(0.5 0.1 269);
+  --chart-2: oklch(0.77 0.145 55);
+  --chart-3: oklch(0.808 0.19 149.571);
+  --chart-4: oklch(0.8 0.154 264);
+  --chart-5: oklch(0.704 0.191 22.216);
+
+  /* Accent navy — dark variant */
+  --accent-navy: oklch(0.5 0.1 269);
+
+  /* Shadow scale — dark */
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  --sidebar: oklch(0.168 0.05 272);
+}
+
+/* ========================================
+   Base layer
+   ======================================== */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    transition: color 200ms ease, background-color 200ms ease;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--muted);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: var(--radius-sm);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
+}
+
+/* ========================================
+   Component overrides — Mboard style
+   ======================================== */
+
+/* Cards: shadow-based separation, no borders */
+[data-slot="card"] {
+  border: none;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+[data-slot="card"]:hover {
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-1px);
+}
+
+/* Table headers: uppercase labels */
+[data-slot="table-head"] {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Table rows: subtle hover */
+[data-slot="table-row"]:hover {
+  background-color: var(--accent);
+}
+
+/* Sidebar nav: Mboard-style active state with left border */
+[data-slot="sidebar-menu-button"][data-active="true"] {
+  border-left: 3px solid var(--sidebar-primary);
+  background: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+}
+
+/* Sidebar nav: hover glow */
+[data-slot="sidebar-menu-button"]:not([data-active="true"]):hover {
+  background: oklch(1 0 0 / 6%);
+  color: oklch(1 0 0);
+}
+
+/* ========================================
+   shadcn token mapping (auto-generated)
+   ======================================== */
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-accent-navy: var(--accent-navy);
+  --shadow-card: var(--shadow-card);
+  --shadow-elevated: var(--shadow-elevated);
+}

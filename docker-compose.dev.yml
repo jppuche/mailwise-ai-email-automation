@@ -1,0 +1,32 @@
+services:
+  db:
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6379:6379"
+    # No password in dev for easier local access
+    command: redis-server
+
+  api:
+    volumes:
+      - ./src:/app/src
+    command: uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
+    environment:
+      - DEBUG=true
+
+  worker:
+    volumes:
+      - ./src:/app/src
+    command: celery -A src.tasks.celery_app worker --loglevel=debug
+
+  scheduler:
+    volumes:
+      - ./src:/app/src
+
+  frontend:
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host

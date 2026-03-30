@@ -1,0 +1,31 @@
+# Stage 1: development — Vite HMR dev server
+FROM node:20-alpine AS dev
+
+WORKDIR /app
+
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm ci
+
+COPY frontend/ .
+
+EXPOSE 5173
+CMD ["npm", "run", "dev", "--", "--host"]
+
+# Stage 2: production build
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm ci
+
+COPY frontend/ .
+RUN npm run build
+
+# Stage 3: production serve via Nginx
+FROM nginx:alpine AS prod
+
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

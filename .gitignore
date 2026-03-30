@@ -1,0 +1,61 @@
+# Local project memory
+*.local.md
+
+# Secrets
+secrets/
+.env
+.env.*
+!.env.example
+
+# Predecessor project and personal docs
+Preproyecto/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Test artifacts
+.coverage
+htmlcov/
+test_output.txt
+
+# Internal scripts (doc validation, placeholder checks)
+scripts/validate-docs.sh
+scripts/validate-placeholders.sh
+scripts/frontend-install.sh
+
+# Windows artifacts
+alembic.ini;C/
+alembic;C/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Meta-project (Claude Code) — kept locally, not published
+CLAUDE.md
+.claude/
+_workflow/
+docs/SCRATCHPAD.md
+docs/CHANGELOG-DEV.md
+docs/AGENT-COORDINATION.md
+docs/LESSONS-LEARNED.md
+docs/STATUS.md
+docs/handoffs/
+docs/specs/
+docs/ignite-reference.md
+docs/RESUMEN-EJECUTIVO.md
+docs/RESUMEN-COMPLETO.md
+docs/reviews/
+docs/methodology/
