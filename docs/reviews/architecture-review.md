@@ -11,7 +11,7 @@
 
 mailwise is a well-architected portfolio project that demonstrates professional-grade patterns across its entire stack. The adapter pattern implementation is exemplary -- consistent ABCs, typed boundaries, no SDK leakage. The services layer cleanly separates orchestration from business logic with documented error strategies per method. The pipeline state machine is enforced at both Python and database levels. The codebase reads like it was built by a team that had a clear architecture blueprint and followed it with discipline.
 
-The findings below are refinements, not structural flaws. A hiring manager reviewing this codebase would see production-quality patterns.
+The findings below are refinements, not structural flaws.
 
 ---
 

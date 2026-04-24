@@ -9,8 +9,8 @@ base that grows incrementally across the full development lifecycle.
 
 ## Block-Based Development
 
-The project is organized into 21 discrete blocks (B00–B19 plus the foundation
-phase). Each block follows the same four-step cycle:
+The project is organized into 20 discrete blocks (B00 through B19, where B00
+is the scaffolding foundation). Each block follows the same four-step cycle:
 
 1. **Spec** — A written specification defines scope, interfaces, exit criteria,
    and test count target before any code is written.

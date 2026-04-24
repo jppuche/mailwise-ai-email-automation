@@ -11,10 +11,10 @@ mailwise was built using a structured multi-agent architecture where each agent 
 | Agent | Model | Role | Specialization | Key Deliverables |
 |-------|-------|------|----------------|------------------|
 | **Sentinel** | Claude Opus | Security & Architecture Auditor | MCP/Skill security evaluation, adapter contract definition, system fragility analysis | Security review reports, hook implementations, architecture directives for all 20 blocks |
-| **Inquisidor** | Claude Sonnet | Testing & Quality Specialist | Unit, integration, and E2E test authoring; type precision at adapter boundaries; exception strategy per pipeline stage | 2,100+ tests across 21 blocks, pytest infrastructure, quality gates |
-| **Lorekeeper** | Claude Sonnet | Documentation Governance | Compound engineering via living reference, decision log, session scratchpad, pattern graduation | DECISIONS.md + internal session logs — maintained across all 21 blocks |
+| **Inquisidor** | Claude Sonnet | Testing & Quality Specialist | Unit, integration, and E2E test authoring; type precision at adapter boundaries; exception strategy per pipeline stage | 2,100+ tests across 20 blocks, pytest infrastructure, quality gates |
+| **Lorekeeper** | Claude Sonnet | Documentation Governance | Compound engineering via living reference, decision log, session scratchpad, pattern graduation | DECISIONS.md + internal session logs — maintained across all 20 blocks |
 | **backend-worker** | Claude Sonnet | Backend Implementation | FastAPI routers, SQLAlchemy models, Celery tasks, service layer, all external adapter integrations | 4 adapter families (email, channel, CRM, LLM), 5-task pipeline, 26 analytics endpoints |
-| **frontend-worker** | Claude Sonnet | Frontend Implementation | React + TypeScript SPA, OpenAPI-driven type codegen, dashboard components, dark mode theming | 11 pages, 17+ components, 15 hooks, 342 frontend tests |
+| **frontend-worker** | Claude Sonnet | Frontend Implementation | React + TypeScript SPA, OpenAPI-driven type codegen, dashboard components, dark mode theming | 12 pages, 17+ components, 15 hooks, 342 frontend tests |
 
 ---
 
@@ -45,7 +45,7 @@ Seven specialized skills augment the agents' reasoning. Each is a methodology do
 - backend-worker: `src/` — never touches `frontend/` or `tests/`
 - frontend-worker: `frontend/src/` — never touches `src/` or `tests/`
 
-**Compound learning via Lorekeeper.** Every session close appends discoveries to `docs/SCRATCHPAD.md` with agent tags. Patterns that recur three or more times graduate to `CLAUDE.md` "Learned Patterns" and become permanent context for all subsequent sessions. This prevented 30+ classes of repeated errors across 21 blocks (e.g., SQLAlchemy enum `.value` vs `.name`, passlib/bcrypt incompatibility, structlog processor signatures).
+**Compound learning via Lorekeeper.** Every session close appends discoveries to an internal session log with agent tags. Patterns that recur three or more times graduate to a "Learned Patterns" section in the project's living reference, becoming permanent context for all subsequent sessions. This prevented 30+ classes of repeated errors across 20 blocks (e.g., SQLAlchemy enum `.value` vs `.name`, passlib/bcrypt incompatibility, structlog processor signatures).
 
 **Parallel deployment for independent tasks.** When block sub-tasks are genuinely independent (e.g., writing adapter code and writing its tests), agents are deployed in parallel, reducing elapsed time approximately 4x compared to sequential execution.
 
@@ -60,14 +60,13 @@ Seven specialized skills augment the agents' reasoning. Each is a methodology do
 
 | Metric | Value |
 |--------|-------|
-| Development blocks delivered | 21 (B00 – B19 + scaffolding) |
+| Development blocks delivered | 20 (B00 – B19, where B00 is scaffolding) |
 | Backend tests | 1,856 |
 | Frontend tests | 342 |
 | Total tests | 2,100+ |
 | Test coverage | 93% |
-| API endpoints | 48 (26 analytics/admin + 22 core) |
 | Adapter families | 4 (email / channel / CRM / LLM) |
 | Celery pipeline tasks | 5 (ingest → classify → route → CRM sync → draft) |
-| Frontend pages | 11 |
-| Architectural decisions logged | 25 (append-only, traceable) |
-| Learned patterns graduated to CLAUDE.md | 30+ |
+| Frontend pages | 12 |
+| Architectural decisions logged | 16 (append-only, traceable) |
+| Learned patterns graduated to living reference | 30+ |
