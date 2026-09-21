@@ -52,6 +52,7 @@ jobs:
         run: >
           pytest
           --cov=src
+          --cov-fail-under=85
           --cov-report=term-missing
           --cov-report=xml:coverage.xml
           tests/unit/

@@ -116,10 +116,19 @@ See [Deployment Guide](docs/deployment.md) for production setup, environment var
 | **Infra** | Docker Compose (6 services), Alembic migrations |
 | **Quality** | pytest, ruff, mypy, Playwright, GitHub Actions CI/CD |
 
+## How this was built
+
+mailwise was developed with AI-assisted engineering (Claude Code) inside a disciplined process, not generated in one shot:
+
+- **20 blocks (B00-B19)**, each following the same cycle: written spec with exit criteria and a test-count target, implementation, tests, review with a handoff document. Details in [docs/methodology/development-process.md](docs/methodology/development-process.md).
+- **59 commits over six weeks (Feb 20 - Mar 30, 2026)** in the private working repository. This public repository is a squashed release of that history with internal planning notes removed, which is why it shows only a handful of commits.
+- **Quality gates on every block**: ruff, mypy, the full test suite and a coverage floor. CI enforces the 85% floor (see quality.yml); the last measured run reported 93%.
+- The AI wrote most of the first draft of each block; the specs, the reviews, the debugging of failing gates and the architectural decisions in the Decision Log are the human part of the loop.
+
 ## Testing
 
 ```
-1,780+ backend tests  ·  342 frontend tests  ·  93% coverage  ·  E2E pipeline validation
+1,780+ backend tests  ·  342 frontend tests  ·  93% coverage (85% floor enforced in CI)  ·  E2E pipeline validation
 ```
 
 - **Contract tests** — Mock adapters implement real ABCs. mypy catches interface violations in tests, not in production.
