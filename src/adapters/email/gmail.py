@@ -217,7 +217,7 @@ class GmailAdapter(EmailAdapter):
             and self._credentials.refresh_token
         ):
             try:
-                self._credentials.refresh(Request())
+                self._credentials.refresh(Request())  # type: ignore[no-untyped-call]
             except RefreshError as exc:
                 raise AuthError("OAuth2 token refresh failed", original_error=exc) from exc
 
