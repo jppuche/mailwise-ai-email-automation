@@ -93,7 +93,7 @@ An `asyncio.gather()` approach would be simpler, but it loses persistence (tasks
 
 ```bash
 git clone https://github.com/jppuche/mailwise-ai-email-automation.git
-cd mailwise
+cd mailwise-ai-email-automation
 cp .env.example .env    # Edit with your API keys
 docker compose up -d    # All 6 services start with health checks
 ```
